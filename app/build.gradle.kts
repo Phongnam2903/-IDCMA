@@ -26,6 +26,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -37,14 +38,22 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    // Firebase BoM và dịch vụ
+    //  Firebase BoM (quản lý version tự động)
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+
+    // Các dịch vụ Firebase
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+
+    // Thư viện tiện ích thêm (gợi ý)
+    implementation("com.squareup.picasso:picasso:2.8") // load ảnh chứng chỉ
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.cardview:cardview:1.0.0")
 }
