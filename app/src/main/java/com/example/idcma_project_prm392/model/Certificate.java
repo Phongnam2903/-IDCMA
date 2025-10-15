@@ -1,4 +1,4 @@
-package com.example.idcma_project_prm392.data.model;
+package com.example.idcma_project_prm392.model;
 
 public class Certificate {
     private String id;
