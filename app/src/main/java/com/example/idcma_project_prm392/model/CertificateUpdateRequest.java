@@ -2,18 +2,18 @@ package com.example.idcma_project_prm392.model;
 
 import java.util.List;
 
-public class Certificate {
+public class CertificateUpdateRequest {
     private String id;
     private String name;
     private String issuer;
-    private String issueDate;
-    private String expiryDate;
-    private String fileUrl;
+    private String issueDate;  // ISO-8601 string
+    private String expiryDate; // ISO-8601 string
+    private String fileUrl;    // uploaded storage URL
     private String credentialId;
     private boolean archived;
     private List<String> tagIds;
 
-    public Certificate() {
+    public CertificateUpdateRequest() {
     }
 
     public String getId() {

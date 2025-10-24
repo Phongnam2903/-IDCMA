@@ -2,26 +2,16 @@ package com.example.idcma_project_prm392.model;
 
 import java.util.List;
 
-public class Certificate {
-    private String id;
+public class CertificateCreateRequest {
     private String name;
     private String issuer;
-    private String issueDate;
-    private String expiryDate;
-    private String fileUrl;
+    private String issueDate;  // ISO-8601 string
+    private String expiryDate; // ISO-8601 string
+    private String fileUrl;    // uploaded storage URL
     private String credentialId;
-    private boolean archived;
     private List<String> tagIds;
 
-    public Certificate() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public CertificateCreateRequest() {
     }
 
     public String getName() {
@@ -70,14 +60,6 @@ public class Certificate {
 
     public void setCredentialId(String credentialId) {
         this.credentialId = credentialId;
-    }
-
-    public boolean isArchived() {
-        return archived;
-    }
-
-    public void setArchived(boolean archived) {
-        this.archived = archived;
     }
 
     public List<String> getTagIds() {
