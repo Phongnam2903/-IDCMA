@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edtCertificateName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Certificate Name"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/edtIssuer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Issuer"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/edtIssueDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Issue Date (dd/MM/yyyy)"
+            android:inputType="date" />
+
+        <Button
+            android:id="@+id/btnSaveCertificate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save" />
+
+    </LinearLayout>
+</ScrollView>
