@@ -15,9 +15,9 @@
         android:theme="@style/Theme.IDCMA_Project_PRM392"
         tools:targetApi="31">
 
-        <!-- Màn hình chính -->
+        <!-- Màn hình đăng nhập (được chạy đầu tiên khi mở app) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".view.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,14 +25,13 @@
             </intent-filter>
         </activity>
 
-        <!-- Dashboard -->
-<!--        <activity android:name=".ui.dashboard.DashboardActivity" />-->
+        <!-- Màn hình chính (Dashboard sau khi đăng nhập thành công) -->
+        <activity android:name=".MainActivity" />
 
-        <!-- Search and Filter -->
-<!--        <activity android:name=".ui.search.SearchFilterActivity" />-->
-
-        <!-- View Certificate Details -->
-<!--        <activity android:name=".ui.detail.CertificateDetailActivity" />-->
+        <!-- Các màn hình khác -->
+        <!-- <activity android:name=".ui.dashboard.DashboardActivity" /> -->
+        <!-- <activity android:name=".ui.search.SearchFilterActivity" /> -->
+        <!-- <activity android:name=".ui.detail.CertificateDetailActivity" /> -->
 
     </application>
 

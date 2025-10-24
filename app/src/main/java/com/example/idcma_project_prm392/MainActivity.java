@@ -1,27 +1,22 @@
 package com.example.idcma_project_prm392;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 public class MainActivity extends AppCompatActivity {
 
