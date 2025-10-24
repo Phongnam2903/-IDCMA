@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.idcma_project_prm392">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -25,14 +27,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Dashboard -->
-<!--        <activity android:name=".ui.dashboard.DashboardActivity" />-->
-
-        <!-- Search and Filter -->
-<!--        <activity android:name=".ui.search.SearchFilterActivity" />-->
-
-        <!-- View Certificate Details -->
-<!--        <activity android:name=".ui.detail.CertificateDetailActivity" />-->
+        <activity android:name=".view.LoginActivity" />
+        <activity android:name=".view.RegisterActivity" />
+        <activity android:name=".view.DashboardActivity" />
+        <activity android:name=".view.CertificateDetailActivity" />
 
     </application>
 
