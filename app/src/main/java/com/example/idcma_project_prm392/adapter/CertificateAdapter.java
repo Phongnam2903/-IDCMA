@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
-import com.example.idcma_project_prm392.view.CertificateDetailActivity;
+import com.example.idcma_project_prm392.view.certificate.CertificateDetailActivity;
 import com.example.idcma_project_prm392.utils.DateUtils;
 
 import java.util.List;
