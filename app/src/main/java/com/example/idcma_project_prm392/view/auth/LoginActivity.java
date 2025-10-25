@@ -51,6 +51,10 @@ public class LoginActivity extends AppCompatActivity {
         tvGoToRegister.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class))
         );
+        tvGoToRegister.setOnClickListener(v -> {
+            Toast.makeText(this, "Đã nhấn Register", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+        });
     }
 
     private void loginUser() {
