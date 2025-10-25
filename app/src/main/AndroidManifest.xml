@@ -29,7 +29,7 @@
 
         <!-- Màn hình đăng ký tài khoản -->
         <activity android:name=".view.auth.RegisterActivity" />
-
+        <activity android:name=".view.auth.ProfileActivity"/>
     </application>
 
 </manifest>

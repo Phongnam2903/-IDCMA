@@ -6,11 +6,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.view.auth.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         recyclerView = findViewById(R.id.recyclerCertificates);
         fabAdd = findViewById(R.id.fabAdd);
@@ -74,5 +81,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         adapter.updateList(filtered);
+    }
+
+    // --- Thêm menu Profile ---
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_profile) {
+            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
