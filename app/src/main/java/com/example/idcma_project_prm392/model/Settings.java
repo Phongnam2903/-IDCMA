@@ -1,10 +1,14 @@
 package com.example.idcma_project_prm392.model;
 
+import com.google.firebase.firestore.DocumentId;
+
 public class Settings {
+    @DocumentId
+    private String id;
     private String userId;
     private boolean twoFactorEnabled;
-    private String lastPasswordChange;
-    private String notificationPreference;
+    private String lastPasswordChange;   // dd/MM/yyyy
+    private String notificationPreference; // e.g. "FCM", "Local", "None"
 
     public Settings() {}
 
@@ -15,35 +19,23 @@ public class Settings {
         this.notificationPreference = notificationPreference;
     }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public boolean isTwoFactorEnabled() {
-        return twoFactorEnabled;
-    }
+    public boolean isTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
 
-    public void setTwoFactorEnabled(boolean twoFactorEnabled) {
-        this.twoFactorEnabled = twoFactorEnabled;
-    }
+    public String getLastPasswordChange() { return lastPasswordChange; }
+    public void setLastPasswordChange(String lastPasswordChange) { this.lastPasswordChange = lastPasswordChange; }
 
-    public String getLastPasswordChange() {
-        return lastPasswordChange;
-    }
+    public String getNotificationPreference() { return notificationPreference; }
+    public void setNotificationPreference(String notificationPreference) { this.notificationPreference = notificationPreference; }
 
-    public void setLastPasswordChange(String lastPasswordChange) {
-        this.lastPasswordChange = lastPasswordChange;
-    }
-
-    public String getNotificationPreference() {
-        return notificationPreference;
-    }
-
-    public void setNotificationPreference(String notificationPreference) {
-        this.notificationPreference = notificationPreference;
+    @Override
+    public String toString() {
+        return "Settings{id='" + id + "', userId='" + userId + "', 2FA=" + twoFactorEnabled + "}";
     }
 }

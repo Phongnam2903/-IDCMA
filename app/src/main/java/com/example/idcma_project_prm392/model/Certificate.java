@@ -1,25 +1,26 @@
 package com.example.idcma_project_prm392.model;
 
 import com.google.firebase.firestore.DocumentId;
+import java.util.List;
 
 public class Certificate {
     @DocumentId
     private String id;
-    private String userId;          // người sở hữu chứng chỉ
+    private String userId;           // owner uid
     private String name;
     private String issuer;
     private String credentialId;
-    private String issueDate;
-    private String expiryDate;
-    private String fileUrl;
+    private String issueDate;        // format dd/MM/yyyy
+    private String expiryDate;       // format dd/MM/yyyy
+    private String fileUrl;          // Firebase Storage URL
     private boolean isArchived;
-    private String[] tags;
+    private List<String> tags;
 
     public Certificate() {}
 
     public Certificate(String userId, String name, String issuer, String credentialId,
                        String issueDate, String expiryDate, String fileUrl,
-                       boolean isArchived, String[] tags) {
+                       boolean isArchived, List<String> tags) {
         this.userId = userId;
         this.name = name;
         this.issuer = issuer;
@@ -31,83 +32,49 @@ public class Certificate {
         this.tags = tags;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public String getIssuer() { return issuer; }
+    public void setIssuer(String issuer) { this.issuer = issuer; }
 
-    public String getName() {
-        return name;
-    }
+    public String getCredentialId() { return credentialId; }
+    public void setCredentialId(String credentialId) { this.credentialId = credentialId; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getIssueDate() { return issueDate; }
+    public void setIssueDate(String issueDate) { this.issueDate = issueDate; }
 
-    public String getIssuer() {
-        return issuer;
-    }
+    public String getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(String expiryDate) { this.expiryDate = expiryDate; }
 
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
+    public String getFileUrl() { return fileUrl; }
+    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
 
-    public String getCredentialId() {
-        return credentialId;
-    }
+    public boolean isArchived() { return isArchived; }
+    public void setArchived(boolean archived) { isArchived = archived; }
 
-    public void setCredentialId(String credentialId) {
-        this.credentialId = credentialId;
-    }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 
-    public String getIssueDate() {
-        return issueDate;
-    }
-
-    public void setIssueDate(String issueDate) {
-        this.issueDate = issueDate;
-    }
-
-    public String getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(String expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
-    public boolean isArchived() {
-        return isArchived;
-    }
-
-    public void setArchived(boolean archived) {
-        isArchived = archived;
-    }
-
-    public String[] getTags() {
-        return tags;
-    }
-
-    public void setTags(String[] tags) {
-        this.tags = tags;
+    @Override
+    public String toString() {
+        return "Certificate{" +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", issuer='" + issuer + '\'' +
+                ", credentialId='" + credentialId + '\'' +
+                ", issueDate='" + issueDate + '\'' +
+                ", expiryDate='" + expiryDate + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", isArchived=" + isArchived +
+                ", tags=" + tags +
+                '}';
     }
 }

@@ -8,7 +8,7 @@ public class User {
     private String fullName;
     private String email;
     private String password;
-    private String role; // "student", "teacher", "admin"
+    private String role;
     private String profileImage;
 
     public User() {}
