@@ -16,10 +16,13 @@ import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class AddCertificateActivity extends AppCompatActivity {
@@ -32,6 +35,7 @@ public class AddCertificateActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseStorage storage;
 
+    private FirebaseAuth auth;
     private final ActivityResultLauncher<String> filePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
@@ -57,6 +61,7 @@ public class AddCertificateActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         btnUploadFile.setOnClickListener(v -> filePicker.launch("*/*"));
 
@@ -115,7 +120,27 @@ public class AddCertificateActivity extends AppCompatActivity {
     private void saveToFirestore(String name, String issuer, String issueDate, String expiryDate,
                                  String credentialId, String fileUrl, ProgressDialog progress) {
 
-        Certificate cert = new Certificate(name, issuer, issueDate, expiryDate, fileUrl, credentialId);
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Người dùng chưa đăng nhập!", Toast.LENGTH_SHORT).show();
+            progress.dismiss();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        Certificate cert = new Certificate(
+                userId,
+                name,
+                issuer,
+                credentialId,
+                issueDate,
+                expiryDate,
+                fileUrl,
+                false,              // isArchived mặc định là false
+                new ArrayList<>()   // tags trống
+        );
+
 
         db.collection("certificates")
                 .add(cert)

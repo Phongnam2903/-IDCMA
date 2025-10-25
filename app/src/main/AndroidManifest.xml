@@ -4,7 +4,6 @@
     package="com.example.idcma_project_prm392">
 
     <application
-        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,7 +14,7 @@
         android:theme="@style/Theme.IDCMA_Project_PRM392"
         tools:targetApi="31">
 
-        <!-- Màn hình đăng nhập (được chạy đầu tiên khi mở app) -->
+        <!-- Màn hình đăng nhập (chạy đầu tiên khi mở app) -->
         <activity
             android:name=".view.auth.LoginActivity"
             android:exported="true">
@@ -25,13 +24,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Màn hình chính (Dashboard sau khi đăng nhập thành công) -->
+        <!-- Màn hình chính -->
         <activity android:name=".MainActivity" />
 
-        <!-- Các màn hình khác -->
-        <!-- <activity android:name=".ui.dashboard.DashboardActivity" /> -->
-        <!-- <activity android:name=".ui.search.SearchFilterActivity" /> -->
-        <!-- <activity android:name=".ui.detail.CertificateDetailActivity" /> -->
+        <!-- Màn hình đăng ký tài khoản -->
+        <activity android:name=".view.auth.RegisterActivity" />
 
     </application>
 

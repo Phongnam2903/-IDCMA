@@ -13,6 +13,12 @@ public class User {
 
     public User() {}
 
+    // Constructor 3 tham số (để dùng trong RegisterActivity)
+    public User(String id, String fullName, String email) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+    }
     public User(String fullName, String email, String password, String role, String profileImage) {
         this.fullName = fullName;
         this.email = email;
