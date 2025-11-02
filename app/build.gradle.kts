@@ -51,6 +51,8 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-functions")
+    implementation("androidx.work:work-runtime:2.9.0")
 
     // Thư viện tiện ích thêm (gợi ý)
     implementation("com.squareup.picasso:picasso:2.8") // load ảnh chứng chỉ
