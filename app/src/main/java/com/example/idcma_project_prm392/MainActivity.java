@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.updateList(filtered);
     }
 
-    // --- Thêm menu Profile & Dashboard ---
+    // --- Thêm menu Profile & Dashboard & Search ---
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -99,6 +99,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.action_dashboard) {
             startActivity(new Intent(MainActivity.this, com.example.idcma_project_prm392.view.certificate.DashboardActivity.class));
+            return true;
+        } else if (itemId == R.id.action_search) {
+            startActivity(new Intent(MainActivity.this, com.example.idcma_project_prm392.view.certificate.SearchFilterActivity.class));
             return true;
         }
         

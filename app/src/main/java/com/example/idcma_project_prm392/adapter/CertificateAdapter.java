@@ -1,5 +1,7 @@
 package com.example.idcma_project_prm392.adapter;
 
+import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +14,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.utils.DateUtils;
+import com.example.idcma_project_prm392.view.certificate.CertificateDetailActivity;
 
 import java.util.ArrayList;
 
 public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.ViewHolder> {
 
     private ArrayList<Certificate> certList;
+    private Context context;
 
     public CertificateAdapter(ArrayList<Certificate> certList) {
         this.certList = certList;
@@ -26,7 +30,8 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        context = parent.getContext();
+        View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_certificate, parent, false);
         return new ViewHolder(view);
     }
@@ -70,6 +75,15 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
             holder.expiringSoonIndicator.setVisibility(View.GONE);
             holder.tvExpiringBadge.setVisibility(View.GONE);
         }
+        
+        // Set click listener to open detail activity
+        holder.itemView.setOnClickListener(v -> {
+            if (c.getId() != null && !c.getId().isEmpty()) {
+                Intent intent = new Intent(context, CertificateDetailActivity.class);
+                intent.putExtra("CERTIFICATE_ID", c.getId());
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override

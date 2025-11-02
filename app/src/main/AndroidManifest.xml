@@ -36,6 +36,10 @@
             android:label="Dashboard"/>
         <activity android:name=".view.certificate.AddCertificateActivity"
             android:label="Thêm chứng chỉ"/>
+        <activity android:name=".view.certificate.SearchFilterActivity"
+            android:label="Tìm kiếm"/>
+        <activity android:name=".view.certificate.CertificateDetailActivity"
+            android:label="Chi tiết chứng chỉ"/>
     </application>
 
 </manifest>
