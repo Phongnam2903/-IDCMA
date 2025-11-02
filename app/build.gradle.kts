@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services") // Firebase plugin
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.firebase.database)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
@@ -45,6 +46,8 @@ dependencies {
 
     //  Firebase BoM (quản lý version tự động)
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+
+    implementation("com.google.firebase:firebase-analytics")
 
     // Các dịch vụ Firebase
     implementation("com.google.firebase:firebase-auth")
