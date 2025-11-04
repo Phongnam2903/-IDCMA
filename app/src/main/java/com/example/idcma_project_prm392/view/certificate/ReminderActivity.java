@@ -6,42 +6,47 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
-import com.google.android.material.textfield.TextInputEditText;
 
 /**
- * Activity để chỉnh sửa thông tin chứng chỉ đã tồn tại
+ * Activity để thiết lập nhắc nhở hết hạn cho chứng chỉ
  * 
  * TODO: Implement các tính năng sau:
- * 1. Load thông tin chứng chỉ hiện tại từ database (dựa vào certificateId từ Intent)
- * 2. Pre-populate các EditText fields với dữ liệu hiện tại
- * 3. Cho phép user chỉnh sửa: name, issuer, credentialId, issueDate, expiryDate
- * 4. Cho phép upload file mới (nếu muốn thay đổi)
- * 5. Validate dữ liệu trước khi lưu
- * 6. Update certificate trong Room Database
- * 7. Update file trong local storage nếu có thay đổi
- * 8. Hiển thị thông báo thành công/thất bại
+ * 1. Hiển thị thông tin chứng chỉ (name, expiry date)
+ * 2. Switch/Toggle để enable/disable reminder
+ * 3. Spinner/Dialog để chọn thời gian nhắc nhở:
+ *    - 1 month before
+ *    - 2 weeks before
+ *    - 1 week before
+ *    - 3 days before
+ *    - 1 day before
+ * 4. Lưu Reminder vào Room Database
+ * 5. Schedule local notification using AlarmManager hoặc WorkManager
+ * 6. Hiển thị danh sách reminders đã set (nếu có)
+ * 7. Cho phép xóa/edit reminder
  */
-public class EditCertificateActivity extends AppCompatActivity {
+public class ReminderActivity extends AppCompatActivity {
 
-    private TextInputEditText edtName, edtIssuer, edtIssueDate, edtExpiryDate, edtCredentialId;
-    private Button btnUploadFile, btnSave;
-    
-    private String certificateId; // ID của certificate cần edit (từ Intent)
+    private Switch switchEnableReminder;
+    private Spinner spinnerReminderTime;
+    private Button btnSaveReminder;
+    private String certificateId; // ID của certificate (từ Intent)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_certificate); // Có thể dùng chung layout với AddCertificateActivity
+        setContentView(R.layout.activity_reminder); // TODO: Create layout file
 
         // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.addCertToolbar);
+        Toolbar toolbar = findViewById(R.id.reminderToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Chỉnh sửa chứng chỉ");
+            getSupportActionBar().setTitle("Nhắc nhở hết hạn");
         }
 
         // Get certificate ID from Intent
@@ -53,9 +58,9 @@ public class EditCertificateActivity extends AppCompatActivity {
         }
 
         // TODO: Initialize views
-        // TODO: Load certificate data from database
-        // TODO: Pre-populate form fields
+        // TODO: Load existing reminder (nếu có)
         // TODO: Setup button listeners
+        // TODO: Implement reminder scheduling logic
     }
 
     @Override

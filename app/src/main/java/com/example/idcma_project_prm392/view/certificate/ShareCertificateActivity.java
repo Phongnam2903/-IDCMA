@@ -9,39 +9,39 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
-import com.google.android.material.textfield.TextInputEditText;
 
 /**
- * Activity để chỉnh sửa thông tin chứng chỉ đã tồn tại
+ * Activity để chia sẻ chứng chỉ một cách bảo mật
  * 
  * TODO: Implement các tính năng sau:
- * 1. Load thông tin chứng chỉ hiện tại từ database (dựa vào certificateId từ Intent)
- * 2. Pre-populate các EditText fields với dữ liệu hiện tại
- * 3. Cho phép user chỉnh sửa: name, issuer, credentialId, issueDate, expiryDate
- * 4. Cho phép upload file mới (nếu muốn thay đổi)
- * 5. Validate dữ liệu trước khi lưu
- * 6. Update certificate trong Room Database
- * 7. Update file trong local storage nếu có thay đổi
- * 8. Hiển thị thông báo thành công/thất bại
+ * 1. Hiển thị thông tin chứng chỉ sẽ được chia sẻ
+ * 2. Options để chia sẻ:
+ *    - Generate secure link (unique, time-limited URL)
+ *    - Send via Email
+ *    - Share via Android ShareSheet
+ * 3. Tạo ShareRecord trong database
+ * 4. Generate secure link (có thể tạo unique token/ID)
+ * 5. Lưu sharing history vào database
+ * 6. Hiển thị link/share options cho user
+ * 7. Copy link to clipboard
+ * 8. Set expiration date cho shared link (optional)
  */
-public class EditCertificateActivity extends AppCompatActivity {
+public class ShareCertificateActivity extends AppCompatActivity {
 
-    private TextInputEditText edtName, edtIssuer, edtIssueDate, edtExpiryDate, edtCredentialId;
-    private Button btnUploadFile, btnSave;
-    
-    private String certificateId; // ID của certificate cần edit (từ Intent)
+    private Button btnGenerateLink, btnShareEmail, btnShareOther;
+    private String certificateId; // ID của certificate cần share (từ Intent)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_certificate); // Có thể dùng chung layout với AddCertificateActivity
+        setContentView(R.layout.activity_share_certificate); // TODO: Create layout file
 
         // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.addCertToolbar);
+        Toolbar toolbar = findViewById(R.id.shareToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Chỉnh sửa chứng chỉ");
+            getSupportActionBar().setTitle("Chia sẻ chứng chỉ");
         }
 
         // Get certificate ID from Intent
@@ -53,9 +53,9 @@ public class EditCertificateActivity extends AppCompatActivity {
         }
 
         // TODO: Initialize views
-        // TODO: Load certificate data from database
-        // TODO: Pre-populate form fields
+        // TODO: Load certificate data
         // TODO: Setup button listeners
+        // TODO: Implement share logic
     }
 
     @Override
