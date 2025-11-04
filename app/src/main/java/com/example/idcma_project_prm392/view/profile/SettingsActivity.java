@@ -45,7 +45,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings); // TODO: Create layout file
+        setContentView(R.layout.activity_settings);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.settingsToolbar);

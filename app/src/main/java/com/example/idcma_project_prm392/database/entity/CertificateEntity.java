@@ -2,6 +2,7 @@ package com.example.idcma_project_prm392.database.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import com.example.idcma_project_prm392.database.Converters;
@@ -46,6 +47,7 @@ public class CertificateEntity {
 
     public CertificateEntity() {}
 
+    @Ignore
     public CertificateEntity(String userId, String name, String issuer, String credentialId,
                            String issueDate, String expiryDate, String filePath,
                            boolean isArchived, List<String> tags) {

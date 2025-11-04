@@ -38,7 +38,7 @@ public class ShareHistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_share_history); // TODO: Create layout file
+        setContentView(R.layout.activity_share_history);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.shareHistoryToolbar);

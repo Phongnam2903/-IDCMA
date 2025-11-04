@@ -34,7 +34,7 @@ public class ShareCertificateActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_share_certificate); // TODO: Create layout file
+        setContentView(R.layout.activity_share_certificate);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.shareToolbar);

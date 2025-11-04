@@ -39,7 +39,7 @@ public class ReminderActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reminder); // TODO: Create layout file
+        setContentView(R.layout.activity_reminder);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.reminderToolbar);

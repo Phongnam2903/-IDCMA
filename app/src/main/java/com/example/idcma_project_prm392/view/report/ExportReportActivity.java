@@ -40,7 +40,7 @@ public class ExportReportActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_export_report); // TODO: Create layout file
+        setContentView(R.layout.activity_export_report);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.exportToolbar);

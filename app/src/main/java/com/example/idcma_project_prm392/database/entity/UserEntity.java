@@ -2,6 +2,7 @@ package com.example.idcma_project_prm392.database.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -30,6 +31,7 @@ public class UserEntity {
 
     public UserEntity() {}
 
+    @Ignore
     public UserEntity(String email, String fullName, String passwordHash, String role, String profileImagePath) {
         this.email = email;
         this.fullName = fullName;

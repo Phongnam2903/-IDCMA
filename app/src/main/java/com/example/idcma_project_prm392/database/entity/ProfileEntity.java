@@ -2,6 +2,7 @@ package com.example.idcma_project_prm392.database.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import com.example.idcma_project_prm392.database.Converters;
@@ -34,6 +35,7 @@ public class ProfileEntity {
 
     public ProfileEntity() {}
 
+    @Ignore
     public ProfileEntity(String userId, String slug, List<String> certificateIds, 
                         String publicUrl, boolean isPublic) {
         this.userId = userId;
