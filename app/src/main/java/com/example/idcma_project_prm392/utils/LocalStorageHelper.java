@@ -2,13 +2,11 @@ package com.example.idcma_project_prm392.utils;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
