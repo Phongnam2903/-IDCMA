@@ -1,10 +1,8 @@
 package com.example.idcma_project_prm392.model;
 
-import com.google.firebase.firestore.DocumentId;
 import java.util.List;
 
 public class Profile {
-    @DocumentId
     private String id;
     private String userId;
     private String slug;               // custom URL slug

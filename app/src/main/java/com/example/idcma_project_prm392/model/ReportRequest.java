@@ -1,9 +1,6 @@
 package com.example.idcma_project_prm392.model;
 
-import com.google.firebase.firestore.DocumentId;
-
 public class ReportRequest {
-    @DocumentId
     private String id;
     private String userId;
     private String format;    // "PDF" or "CSV"

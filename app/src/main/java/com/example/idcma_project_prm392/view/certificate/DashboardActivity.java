@@ -14,19 +14,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.example.idcma_project_prm392.repository.CertificateRepository;
+import com.example.idcma_project_prm392.utils.SessionManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private CertificateAdapter adapter;
     private ArrayList<Certificate> certList = new ArrayList<>();
-    private FirebaseFirestore db;
-    private FirebaseAuth auth;
+    private CertificateRepository certificateRepository;
+    private SessionManager sessionManager;
     private ProgressBar progressBar;
     private TextView tvEmptyState;
 
@@ -50,8 +50,8 @@ public class DashboardActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+        certificateRepository = new CertificateRepository(this);
+        sessionManager = new SessionManager(this);
 
         // Khởi tạo adapter với danh sách trống
         adapter = new CertificateAdapter(certList);
@@ -63,46 +63,46 @@ public class DashboardActivity extends AppCompatActivity {
     private void loadCertifications() {
         progressBar.setVisibility(ProgressBar.VISIBLE);
         
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        String currentUserId = sessionManager.getUserId();
         
-        if (currentUserId == null) {
+        if (currentUserId == null || !sessionManager.isLoggedIn()) {
             progressBar.setVisibility(ProgressBar.GONE);
             Toast.makeText(this, "Vui lòng đăng nhập để xem chứng chỉ", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Lấy chứng chỉ của user hiện tại, real-time update
-        db.collection("certificates")
-                .whereEqualTo("userId", currentUserId)
-                .addSnapshotListener((value, error) -> {
-                    progressBar.setVisibility(ProgressBar.GONE);
-                    
-                    if (error != null) {
-                        Toast.makeText(this, "Lỗi khi tải dữ liệu: " + error.getMessage(), 
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (value != null) {
-                        certList.clear();
-                        for (QueryDocumentSnapshot doc : value) {
-                            Certificate cert = doc.toObject(Certificate.class);
-                            certList.add(cert);
-                        }
-                        
-                        // Hiển thị empty state nếu không có chứng chỉ
-                        if (certList.isEmpty()) {
-                            tvEmptyState.setVisibility(TextView.VISIBLE);
-                            recyclerView.setVisibility(RecyclerView.GONE);
-                        } else {
-                            tvEmptyState.setVisibility(TextView.GONE);
-                            recyclerView.setVisibility(RecyclerView.VISIBLE);
-                        }
-                        
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+        // Lấy chứng chỉ của user hiện tại từ Room Database
+        new Thread(() -> {
+            List<Certificate> certificates = certificateRepository.getCertificatesByUserId(currentUserId);
+            
+            runOnUiThread(() -> {
+                progressBar.setVisibility(ProgressBar.GONE);
+                
+                certList.clear();
+                if (certificates != null) {
+                    certList.addAll(certificates);
+                }
+                
+                // Hiển thị empty state nếu không có chứng chỉ
+                if (certList.isEmpty()) {
+                    tvEmptyState.setVisibility(TextView.VISIBLE);
+                    recyclerView.setVisibility(RecyclerView.GONE);
+                } else {
+                    tvEmptyState.setVisibility(TextView.GONE);
+                    recyclerView.setVisibility(RecyclerView.VISIBLE);
+                }
+                
+                adapter.notifyDataSetChanged();
+            });
+        }).start();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload certificates khi quay lại activity
+        loadCertifications();
     }
 
     @Override

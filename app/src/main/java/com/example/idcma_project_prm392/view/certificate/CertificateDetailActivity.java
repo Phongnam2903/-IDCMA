@@ -17,13 +17,10 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
+import com.example.idcma_project_prm392.utils.LocalStorageHelper;
 import com.google.android.material.card.MaterialCardView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 public class CertificateDetailActivity extends AppCompatActivity {
@@ -36,9 +33,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private View expiryWarningBanner;
 
-    private FirebaseFirestore db;
-    private FirebaseAuth auth;
-    private FirebaseStorage storage;
+    private CertificateRepository certificateRepository;
 
     private String certificateId;
     private Certificate certificate;
@@ -56,10 +51,8 @@ public class CertificateDetailActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Chi tiết chứng chỉ");
         }
 
-        // Initialize Firebase
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
+        // Initialize Repository
+        certificateRepository = new CertificateRepository(this);
 
         // Initialize views
         initViews();
@@ -110,28 +103,30 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private void loadCertificateDetails() {
         progressBar.setVisibility(View.VISIBLE);
 
-        db.collection("certificates")
-                .document(certificateId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
+        // Load từ Room Database
+        new Thread(() -> {
+            try {
+                long id = Long.parseLong(certificateId);
+                certificate = certificateRepository.getCertificateById(id);
+                
+                runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-
-                    if (documentSnapshot.exists()) {
-                        certificate = documentSnapshot.toObject(Certificate.class);
-                        if (certificate != null) {
-                            certificate.setId(documentSnapshot.getId());
-                            displayCertificateDetails();
-                        }
+                    
+                    if (certificate != null) {
+                        displayCertificateDetails();
                     } else {
                         Toast.makeText(this, "Không tìm thấy chứng chỉ", Toast.LENGTH_SHORT).show();
                         finish();
                     }
-                })
-                .addOnFailureListener(e -> {
+                });
+            } catch (NumberFormatException e) {
+                runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "ID chứng chỉ không hợp lệ", Toast.LENGTH_SHORT).show();
                     finish();
                 });
+            }
+        }).start();
     }
 
     private void displayCertificateDetails() {
@@ -182,12 +177,12 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
 
         // File Display
-        String fileUrl = certificate.getFileUrl();
-        if (fileUrl != null && !fileUrl.isEmpty()) {
+        String filePath = certificate.getFileUrl(); // fileUrl is actually filePath now
+        if (filePath != null && !filePath.isEmpty() && LocalStorageHelper.fileExists(filePath)) {
             cardFile.setVisibility(View.VISIBLE);
             
             // Determine file type
-            if (fileUrl.contains(".pdf")) {
+            if (filePath.contains(".pdf")) {
                 tvFileType.setText("📄 PDF Document");
                 imgCertificate.setImageResource(android.R.drawable.ic_menu_gallery);
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER);
@@ -196,12 +191,17 @@ public class CertificateDetailActivity extends AppCompatActivity {
                 tvFileType.setText("🖼️ Image File");
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 
-                // Load image with Picasso
-                Picasso.get()
-                        .load(fileUrl)
-                        .placeholder(android.R.drawable.ic_menu_gallery)
-                        .error(android.R.drawable.ic_menu_report_image)
-                        .into(imgCertificate);
+                // Load image from local file path with Picasso
+                Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
+                if (fileUri != null) {
+                    Picasso.get()
+                            .load(fileUri)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_report_image)
+                            .into(imgCertificate);
+                } else {
+                    imgCertificate.setImageResource(android.R.drawable.ic_menu_gallery);
+                }
             }
             
             btnViewFile.setVisibility(View.VISIBLE);
@@ -261,44 +261,32 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private void deleteCertificate() {
         progressBar.setVisibility(View.VISIBLE);
 
-        // Delete from Firestore
-        db.collection("certificates")
-                .document(certificateId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    // Delete file from Storage if exists
-                    if (certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
-                        deleteFileFromStorage(certificate.getFileUrl());
-                    } else {
-                        onDeleteSuccess();
-                    }
-                })
-                .addOnFailureListener(e -> {
+        // Delete from Room Database
+        new Thread(() -> {
+            try {
+                long id = Long.parseLong(certificateId);
+                
+                // Delete file from local storage if exists
+                if (certificate != null && certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
+                    LocalStorageHelper.deleteCertificateFile(this, certificate.getFileUrl());
+                }
+                
+                // Delete certificate from database
+                certificateRepository.deleteCertificateById(id);
+                
+                runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Lỗi xóa: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "✅ Đã xóa chứng chỉ thành công", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK); // Notify calling activity
+                    finish();
                 });
-    }
-
-    private void deleteFileFromStorage(String fileUrl) {
-        try {
-            StorageReference fileRef = storage.getReferenceFromUrl(fileUrl);
-            fileRef.delete()
-                    .addOnSuccessListener(aVoid -> onDeleteSuccess())
-                    .addOnFailureListener(e -> {
-                        // File delete failed, but document already deleted
-                        onDeleteSuccess();
-                    });
-        } catch (Exception e) {
-            // If URL parsing fails, still show success for document deletion
-            onDeleteSuccess();
-        }
-    }
-
-    private void onDeleteSuccess() {
-        progressBar.setVisibility(View.GONE);
-        Toast.makeText(this, "✅ Đã xóa chứng chỉ thành công", Toast.LENGTH_SHORT).show();
-        setResult(RESULT_OK); // Notify calling activity
-        finish();
+            } catch (NumberFormatException e) {
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Lỗi xóa: ID không hợp lệ", Toast.LENGTH_LONG).show();
+                });
+            }
+        }).start();
     }
 
     private void viewFullFile() {
@@ -307,11 +295,25 @@ public class CertificateDetailActivity extends AppCompatActivity {
             return;
         }
 
-        String fileUrl = certificate.getFileUrl();
+        String filePath = certificate.getFileUrl();
         
-        // Open file in browser or external viewer
+        // Check if file exists
+        if (!LocalStorageHelper.fileExists(filePath)) {
+            Toast.makeText(this, "File không tồn tại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Get URI from file path
+        Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
+        if (fileUri == null) {
+            Toast.makeText(this, "Không thể mở file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Open file with external viewer
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(fileUrl));
+        intent.setDataAndType(fileUri, getContentResolver().getType(fileUri));
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         
         try {
             startActivity(intent);

@@ -6,42 +6,43 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.chip.ChipGroup;
 
 /**
- * Activity để chỉnh sửa thông tin chứng chỉ đã tồn tại
+ * Activity để quản lý tags/categories cho chứng chỉ
  * 
  * TODO: Implement các tính năng sau:
- * 1. Load thông tin chứng chỉ hiện tại từ database (dựa vào certificateId từ Intent)
- * 2. Pre-populate các EditText fields với dữ liệu hiện tại
- * 3. Cho phép user chỉnh sửa: name, issuer, credentialId, issueDate, expiryDate
- * 4. Cho phép upload file mới (nếu muốn thay đổi)
- * 5. Validate dữ liệu trước khi lưu
- * 6. Update certificate trong Room Database
- * 7. Update file trong local storage nếu có thay đổi
- * 8. Hiển thị thông báo thành công/thất bại
+ * 1. Hiển thị tags hiện tại của certificate trong ChipGroup
+ * 2. Button "Add Tag" mở Dialog với:
+ *    - EditText để nhập tag mới
+ *    - Hoặc list các tags có sẵn để chọn
+ * 3. Có thể xóa tag bằng cách click vào Chip (với confirm dialog)
+ * 4. Lưu tags vào Certificate trong Room Database
+ * 5. Update certificate với tags mới
+ * 6. Hiển thị suggestions tags phổ biến (IT, Business, Language, Design, etc.)
+ * 7. Auto-complete khi nhập tag
  */
-public class EditCertificateActivity extends AppCompatActivity {
+public class TagManagementActivity extends AppCompatActivity {
 
-    private TextInputEditText edtName, edtIssuer, edtIssueDate, edtExpiryDate, edtCredentialId;
-    private Button btnUploadFile, btnSave;
-    
-    private String certificateId; // ID của certificate cần edit (từ Intent)
+    private ChipGroup chipGroupTags;
+    private Button btnAddTag;
+    private String certificateId; // ID của certificate (từ Intent)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_certificate); // Có thể dùng chung layout với AddCertificateActivity
+        setContentView(R.layout.activity_tag_management);
 
         // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.addCertToolbar);
+        Toolbar toolbar = findViewById(R.id.tagToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Chỉnh sửa chứng chỉ");
+            getSupportActionBar().setTitle("Quản lý Tags");
         }
 
         // Get certificate ID from Intent
@@ -53,9 +54,10 @@ public class EditCertificateActivity extends AppCompatActivity {
         }
 
         // TODO: Initialize views
-        // TODO: Load certificate data from database
-        // TODO: Pre-populate form fields
+        // TODO: Load current tags của certificate
+        // TODO: Display tags in ChipGroup
         // TODO: Setup button listeners
+        // TODO: Implement add/remove tag logic
     }
 
     @Override
