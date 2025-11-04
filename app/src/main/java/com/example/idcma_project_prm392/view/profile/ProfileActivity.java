@@ -9,14 +9,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.idcma_project_prm392.model.User;
+import com.example.idcma_project_prm392.repository.UserRepository;
+import com.example.idcma_project_prm392.utils.SessionManager;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private TextView tvFullName, tvEmail;
     private Button btnLogout;
-    private FirebaseAuth auth;
+    private SessionManager sessionManager;
+    private UserRepository userRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,17 +29,46 @@ public class ProfileActivity extends AppCompatActivity {
         tvEmail = findViewById(R.id.tvEmail);
         btnLogout = findViewById(R.id.btnLogout);
 
-        auth = FirebaseAuth.getInstance();
-        FirebaseUser user = auth.getCurrentUser();
+        sessionManager = new SessionManager(this);
+        userRepository = new UserRepository(this);
 
-        if (user != null) {
-            tvEmail.setText(user.getEmail());
-            // Nếu bạn lưu fullname trong Firestore thì có thể fetch thêm ở đây
-            tvFullName.setText("Xin chào, " + user.getEmail().split("@")[0]);
+        // Load user info from session
+        String email = sessionManager.getUserEmail();
+        String fullName = sessionManager.getUserName();
+        String userId = sessionManager.getUserId();
+
+        if (email != null && !email.isEmpty()) {
+            tvEmail.setText(email);
+        }
+
+        if (fullName != null && !fullName.isEmpty()) {
+            tvFullName.setText("Xin chào, " + fullName);
+        } else if (email != null && !email.isEmpty()) {
+            tvFullName.setText("Xin chào, " + email.split("@")[0]);
+        } else {
+            tvFullName.setText("Xin chào");
+        }
+
+        // Load full user info from database if needed
+        if (userId != null && !userId.isEmpty()) {
+            new Thread(() -> {
+                try {
+                    long id = Long.parseLong(userId);
+                    User user = userRepository.getUserById(id);
+                    
+                    runOnUiThread(() -> {
+                        if (user != null && user.getFullName() != null && !user.getFullName().isEmpty()) {
+                            tvFullName.setText("Xin chào, " + user.getFullName());
+                        }
+                    });
+                } catch (NumberFormatException e) {
+                    // Ignore
+                }
+            }).start();
         }
 
         btnLogout.setOnClickListener(v -> {
-            auth.signOut();
+            sessionManager.logout();
             Toast.makeText(this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
             finishAffinity();

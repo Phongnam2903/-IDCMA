@@ -13,14 +13,17 @@ import android.widget.Toast;
 
 import com.example.idcma_project_prm392.MainActivity;
 import com.example.idcma_project_prm392.R;
-import com.google.firebase.auth.FirebaseAuth;
+import com.example.idcma_project_prm392.model.User;
+import com.example.idcma_project_prm392.repository.UserRepository;
+import com.example.idcma_project_prm392.utils.SessionManager;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText loginEmail, loginPassword;
     private Button btnLogin;
     private TextView tvGoToRegister;
-    private FirebaseAuth auth;
+    private UserRepository userRepository;
+    private SessionManager sessionManager;
     private ProgressDialog progress;
 
     @Override
@@ -28,10 +31,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        auth = FirebaseAuth.getInstance();
+        userRepository = new UserRepository(this);
+        sessionManager = new SessionManager(this);
 
         // Nếu đã đăng nhập thì bỏ qua màn hình này
-        if (auth.getCurrentUser() != null) {
+        if (sessionManager.isLoggedIn()) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();
             return;
@@ -51,10 +55,6 @@ public class LoginActivity extends AppCompatActivity {
         tvGoToRegister.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class))
         );
-        tvGoToRegister.setOnClickListener(v -> {
-            Toast.makeText(this, "Đã nhấn Register", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-        });
     }
 
     private void loginUser() {
@@ -68,19 +68,27 @@ public class LoginActivity extends AppCompatActivity {
 
         progress.show();
 
-        auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener(authResult -> {
-                    progress.dismiss();
+        // Login từ Room Database
+        new Thread(() -> {
+            User user = userRepository.login(email, password);
+            
+            runOnUiThread(() -> {
+                progress.dismiss();
+                
+                if (user != null) {
+                    // Tạo session
+                    sessionManager.createSession(user.getId(), user.getEmail(), user.getFullName());
+                    
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-
+                    
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
-                })
-                .addOnFailureListener(e -> {
-                    progress.dismiss();
-                    Toast.makeText(this, "Đăng nhập thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                } else {
+                    Toast.makeText(this, "Email hoặc mật khẩu không đúng!", Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 }

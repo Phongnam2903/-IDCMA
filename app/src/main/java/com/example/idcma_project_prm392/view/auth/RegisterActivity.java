@@ -13,16 +13,16 @@ import android.widget.Toast;
 import com.example.idcma_project_prm392.MainActivity;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.User;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.idcma_project_prm392.repository.UserRepository;
+import com.example.idcma_project_prm392.utils.SessionManager;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText etFullName, etEmail, etPassword, etConfirmPassword;
     private Button btnRegister;
     private TextView tvLogin;
-    private FirebaseAuth auth;
-    private FirebaseFirestore db;
+    private UserRepository userRepository;
+    private SessionManager sessionManager;
     private ProgressDialog progressDialog;
 
     @Override
@@ -30,9 +30,9 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Khởi tạo Firebase
-        auth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        // Khởi tạo Repository và SessionManager
+        userRepository = new UserRepository(this);
+        sessionManager = new SessionManager(this);
 
         // Ánh xạ view
         etFullName = findViewById(R.id.etFullName);
@@ -83,54 +83,50 @@ public class RegisterActivity extends AppCompatActivity {
 
         progressDialog.show();
 
-        // 🔍 Kiểm tra email có tồn tại trước khi tạo tài khoản
-        auth.fetchSignInMethodsForEmail(email)
-                .addOnSuccessListener(result -> {
-                    if (result.getSignInMethods() != null && !result.getSignInMethods().isEmpty()) {
-                        progressDialog.dismiss();
-                        Toast.makeText(this, "Email này đã được đăng ký. Vui lòng dùng email khác.", Toast.LENGTH_LONG).show();
-                    } else {
-                        // ✅ Nếu email chưa tồn tại → tạo tài khoản mới
-                        createAccount(fullName, email, password);
-                    }
-                })
-                .addOnFailureListener(e -> {
+        // Kiểm tra email có tồn tại trước khi tạo tài khoản
+        new Thread(() -> {
+            boolean emailExists = userRepository.emailExists(email);
+            
+            runOnUiThread(() -> {
+                if (emailExists) {
                     progressDialog.dismiss();
-                    Toast.makeText(this, "Lỗi khi kiểm tra email: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                    Toast.makeText(this, "Email này đã được đăng ký. Vui lòng dùng email khác.", Toast.LENGTH_LONG).show();
+                } else {
+                    // Nếu email chưa tồn tại → tạo tài khoản mới
+                    createAccount(fullName, email, password);
+                }
+            });
+        }).start();
     }
 
     private void createAccount(String fullName, String email, String password) {
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener(authResult -> {
-                    String uid = auth.getCurrentUser().getUid();
-                    User user = new User(uid, fullName, email);
-
-                    // Lưu thông tin người dùng vào Firestore
-                    db.collection("users").document(uid).set(user)
-                            .addOnSuccessListener(aVoid -> {
-                                progressDialog.dismiss();
-                                Toast.makeText(this, "Đăng ký thành công! Chào mừng bạn, " + fullName + "!", Toast.LENGTH_SHORT).show();
-
-                                // Chuyển sang MainActivity
-                                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                                finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                progressDialog.dismiss();
-                                Toast.makeText(this, "Không thể lưu thông tin người dùng: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    String message = e.getMessage();
-                    if (message != null && message.contains("email address is already in use")) {
-                        Toast.makeText(this, "Email này đã được sử dụng. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "Đăng ký thất bại: " + message, Toast.LENGTH_LONG).show();
-                    }
-                });
+        new Thread(() -> {
+            User user = new User();
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPassword(password); // Password sẽ được hash trong repository
+            user.setRole("user"); // Default role
+            
+            long userId = userRepository.register(user);
+            
+            runOnUiThread(() -> {
+                progressDialog.dismiss();
+                
+                if (userId > 0) {
+                    // Tạo session
+                    sessionManager.createSession(String.valueOf(userId), email, fullName);
+                    
+                    Toast.makeText(this, "Đăng ký thành công! Chào mừng bạn, " + fullName + "!", Toast.LENGTH_SHORT).show();
+                    
+                    // Chuyển sang MainActivity
+                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Đăng ký thất bại! Vui lòng thử lại.", Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 }

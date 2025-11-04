@@ -21,12 +21,10 @@ import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.repository.CertificateRepository;
+import com.example.idcma_project_prm392.utils.LocalStorageHelper;
+import com.example.idcma_project_prm392.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -42,9 +40,8 @@ public class AddCertificateActivity extends AppCompatActivity {
 
     private Uri fileUri;
     private String fileType = "";
-    private FirebaseFirestore db;
-    private FirebaseStorage storage;
-    private FirebaseAuth auth;
+    private CertificateRepository certificateRepository;
+    private SessionManager sessionManager;
 
     // File picker launcher for images and PDFs
     private final ActivityResultLauncher<String> filePicker =
@@ -81,10 +78,9 @@ public class AddCertificateActivity extends AppCompatActivity {
         progressOverlay = findViewById(R.id.progressOverlay);
         tvProgressMessage = findViewById(R.id.tvProgressMessage);
 
-        // Initialize Firebase
-        db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-        auth = FirebaseAuth.getInstance();
+        // Initialize Repository and SessionManager
+        certificateRepository = new CertificateRepository(this);
+        sessionManager = new SessionManager(this);
 
         // Set click listeners
         btnUploadFile.setOnClickListener(v -> openFilePicker());
@@ -207,8 +203,8 @@ public class AddCertificateActivity extends AppCompatActivity {
         showProgress("Đang lưu chứng chỉ...");
 
         // Check if user is logged in
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser == null) {
+        String userId = sessionManager.getUserId();
+        if (userId == null || !sessionManager.isLoggedIn()) {
             hideProgress();
             Toast.makeText(this, "Vui lòng đăng nhập để tiếp tục", Toast.LENGTH_SHORT).show();
             finish();
@@ -217,48 +213,40 @@ public class AddCertificateActivity extends AppCompatActivity {
 
         // Upload file if selected
         if (fileUri != null) {
-            uploadFileAndSave(name, issuer, issueDate, expiryDate, credentialId, currentUser.getUid());
+            uploadFileAndSave(name, issuer, issueDate, expiryDate, credentialId, userId);
         } else {
             // Save without file
-            saveToFirestore(name, issuer, issueDate, expiryDate, credentialId, currentUser.getUid(), null);
+            saveToDatabase(name, issuer, issueDate, expiryDate, credentialId, userId, null);
         }
     }
 
     private void uploadFileAndSave(String name, String issuer, String issueDate, 
                                    String expiryDate, String credentialId, String userId) {
-        tvProgressMessage.setText("Đang tải file lên...");
+        tvProgressMessage.setText("Đang lưu file...");
 
-        // Create unique filename
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String fileExtension = getFileExtension(fileUri);
-        String fileName = "cert_" + timestamp + "." + fileExtension;
+        // Save file to local storage
+        new Thread(() -> {
+            String filePath = LocalStorageHelper.saveCertificateFile(
+                    this, 
+                    fileUri, 
+                    userId, 
+                    null // Auto-generate filename
+            );
 
-        StorageReference fileRef = storage.getReference()
-                .child("certificates/" + userId + "/" + fileName);
-
-        fileRef.putFile(fileUri)
-                .addOnProgressListener(taskSnapshot -> {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    tvProgressMessage.setText(String.format("Đang tải lên... %.0f%%", progress));
-                })
-                .addOnSuccessListener(taskSnapshot -> {
-                    // Get download URL
-                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        tvProgressMessage.setText("Đang lưu thông tin...");
-                        saveToFirestore(name, issuer, issueDate, expiryDate, credentialId, userId, uri.toString());
-                    }).addOnFailureListener(e -> {
-                        hideProgress();
-                        Toast.makeText(this, "Lỗi khi lấy URL: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
-                })
-                .addOnFailureListener(e -> {
+            runOnUiThread(() -> {
+                if (filePath != null) {
+                    tvProgressMessage.setText("Đang lưu thông tin...");
+                    saveToDatabase(name, issuer, issueDate, expiryDate, credentialId, userId, filePath);
+                } else {
                     hideProgress();
-                    Toast.makeText(this, "Lỗi upload file: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                    Toast.makeText(this, "Lỗi khi lưu file. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 
-    private void saveToFirestore(String name, String issuer, String issueDate, 
-                                String expiryDate, String credentialId, String userId, String fileUrl) {
+    private void saveToDatabase(String name, String issuer, String issueDate, 
+                                String expiryDate, String credentialId, String userId, String filePath) {
 
         Certificate cert = new Certificate(
                 userId,
@@ -267,22 +255,25 @@ public class AddCertificateActivity extends AppCompatActivity {
                 credentialId,
                 issueDate,
                 expiryDate,
-                fileUrl,
+                filePath, // Local file path thay vì Firebase Storage URL
                 false,              // isArchived = false
                 new ArrayList<>()   // tags = empty
         );
 
-        db.collection("certificates")
-                .add(cert)
-                .addOnSuccessListener(documentReference -> {
-                    hideProgress();
+        new Thread(() -> {
+            long certificateId = certificateRepository.insertCertificate(cert);
+            
+            runOnUiThread(() -> {
+                hideProgress();
+                
+                if (certificateId > 0) {
                     Toast.makeText(this, "✅ Thêm chứng chỉ thành công!", Toast.LENGTH_SHORT).show();
                     finish();
-                })
-                .addOnFailureListener(e -> {
-                    hideProgress();
-                    Toast.makeText(this, "❌ Lỗi khi lưu: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                } else {
+                    Toast.makeText(this, "❌ Lỗi khi lưu: Không thể lưu chứng chỉ", Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 
     private String getFileExtension(Uri uri) {

@@ -23,13 +23,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
+import com.example.idcma_project_prm392.utils.SessionManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,8 +49,8 @@ public class SearchFilterActivity extends AppCompatActivity {
     private ArrayList<Certificate> allCertificates = new ArrayList<>();
     private ArrayList<Certificate> filteredCertificates = new ArrayList<>();
 
-    private FirebaseFirestore db;
-    private FirebaseAuth auth;
+    private CertificateRepository certificateRepository;
+    private SessionManager sessionManager;
 
     // Filter states
     private Set<String> selectedCategories = new HashSet<>();
@@ -91,9 +90,9 @@ public class SearchFilterActivity extends AppCompatActivity {
         adapter = new CertificateAdapter(filteredCertificates);
         recyclerView.setAdapter(adapter);
 
-        // Initialize Firebase
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+        // Initialize Repository and SessionManager
+        certificateRepository = new CertificateRepository(this);
+        sessionManager = new SessionManager(this);
 
         // Setup search with debounce
         setupSearchDebounce();
@@ -134,34 +133,31 @@ public class SearchFilterActivity extends AppCompatActivity {
     private void loadCertificates() {
         progressBar.setVisibility(View.VISIBLE);
 
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        String currentUserId = sessionManager.getUserId();
 
-        if (currentUserId == null) {
+        if (currentUserId == null || !sessionManager.isLoggedIn()) {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        db.collection("certificates")
-                .whereEqualTo("userId", currentUserId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    progressBar.setVisibility(View.GONE);
-                    allCertificates.clear();
+        // Load certificates from Room Database
+        new Thread(() -> {
+            List<Certificate> certificates = certificateRepository.getCertificatesByUserId(currentUserId);
+            
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                allCertificates.clear();
+                
+                if (certificates != null) {
+                    allCertificates.addAll(certificates);
+                }
 
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Certificate cert = doc.toObject(Certificate.class);
-                        allCertificates.add(cert);
-                    }
-
-                    // Apply initial filter
-                    applyFiltersAndSort();
-                })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                // Apply initial filter
+                applyFiltersAndSort();
+            });
+        }).start();
     }
 
     private void performSearch(String query) {

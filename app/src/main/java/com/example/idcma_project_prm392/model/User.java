@@ -1,9 +1,6 @@
 package com.example.idcma_project_prm392.model;
 
-import com.google.firebase.firestore.DocumentId;
-
 public class User {
-    @DocumentId
     private String id;
     private String fullName;
     private String email;

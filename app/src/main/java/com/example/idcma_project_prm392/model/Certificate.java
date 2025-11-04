@@ -1,10 +1,8 @@
 package com.example.idcma_project_prm392.model;
 
-import com.google.firebase.firestore.DocumentId;
 import java.util.List;
 
 public class Certificate {
-    @DocumentId
     private String id;
     private String userId;           // owner uid
     private String name;
@@ -12,7 +10,7 @@ public class Certificate {
     private String credentialId;
     private String issueDate;        // format dd/MM/yyyy
     private String expiryDate;       // format dd/MM/yyyy
-    private String fileUrl;          // Firebase Storage URL
+    private String fileUrl;          // Local file path (thay vì Firebase Storage URL)
     private boolean isArchived;
     private List<String> tags;
 

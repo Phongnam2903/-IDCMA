@@ -14,20 +14,20 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
+import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.view.auth.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private CertificateAdapter adapter;
     private ArrayList<Certificate> certList;
-    private FirebaseFirestore db;
+    private CertificateRepository certificateRepository;
     private FloatingActionButton fabAdd;
     private EditText edtSearch;
     private ImageButton btnSearch;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         edtSearch = findViewById(R.id.edtSearch);
         btnSearch = findViewById(R.id.btnSearch);
 
-        db = FirebaseFirestore.getInstance();
+        certificateRepository = new CertificateRepository(this);
         certList = new ArrayList<>();
         adapter = new CertificateAdapter(certList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -61,26 +61,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadCertificates() {
-        db.collection("certificates")
-                .addSnapshotListener((value, error) -> {
-                    if (error != null || value == null) return;
-                    certList.clear();
-                    for (QueryDocumentSnapshot doc : value) {
-                        Certificate c = doc.toObject(Certificate.class);
-                        certList.add(c);
-                    }
-                    adapter.notifyDataSetChanged();
-                });
+        // Load từ Room Database
+        List<Certificate> certificates = certificateRepository.getAllCertificates();
+        certList.clear();
+        if (certificates != null) {
+            certList.addAll(certificates);
+        }
+        adapter.notifyDataSetChanged();
     }
 
     private void searchCertificate(String keyword) {
-        ArrayList<Certificate> filtered = new ArrayList<>();
-        for (Certificate c : certList) {
-            if (c.getName().toLowerCase().contains(keyword.toLowerCase())) {
-                filtered.add(c);
-            }
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // Nếu keyword rỗng, hiển thị tất cả
+            loadCertificates();
+            return;
         }
-        adapter.updateList(filtered);
+        
+        // Search trong Room Database
+        List<Certificate> filtered = certificateRepository.searchCertificatesByName(keyword.trim());
+        certList.clear();
+        if (filtered != null) {
+            certList.addAll(filtered);
+        }
+        adapter.notifyDataSetChanged();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload certificates khi quay lại activity
+        loadCertificates();
     }
 
     // --- Thêm menu Profile & Dashboard & Search ---
