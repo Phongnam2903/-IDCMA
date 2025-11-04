@@ -4,7 +4,6 @@
     package="com.example.idcma_project_prm392">
 
     <application
-        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,9 +14,9 @@
         android:theme="@style/Theme.IDCMA_Project_PRM392"
         tools:targetApi="31">
 
-        <!-- Màn hình chính -->
+        <!-- Màn hình đăng nhập (chạy đầu tiên khi mở app) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".view.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,15 +24,44 @@
             </intent-filter>
         </activity>
 
-        <!-- Dashboard -->
-<!--        <activity android:name=".ui.dashboard.DashboardActivity" />-->
+        <!-- Màn hình chính -->
+        <activity android:name=".MainActivity" />
 
-        <!-- Search and Filter -->
-<!--        <activity android:name=".ui.search.SearchFilterActivity" />-->
-
-        <!-- View Certificate Details -->
-<!--        <activity android:name=".ui.detail.CertificateDetailActivity" />-->
-
+        <!-- Màn hình đăng ký tài khoản -->
+        <activity android:name=".view.auth.RegisterActivity" />
+        <activity android:name=".view.auth.ProfileActivity"/>
+        
+        <!-- Certificate Management Activities -->
+        <activity android:name=".view.certificate.DashboardActivity"
+            android:label="Dashboard"/>
+        <activity android:name=".view.certificate.AddCertificateActivity"
+            android:label="Thêm chứng chỉ"/>
+        <activity android:name=".view.certificate.SearchFilterActivity"
+            android:label="Tìm kiếm"/>
+        <activity android:name=".view.certificate.CertificateDetailActivity"
+            android:label="Chi tiết chứng chỉ"/>
+        <activity android:name=".view.certificate.EditCertificateActivity"
+            android:label="Chỉnh sửa chứng chỉ"/>
+        <activity android:name=".view.certificate.ShareCertificateActivity"
+            android:label="Chia sẻ chứng chỉ"/>
+        <activity android:name=".view.certificate.ReminderActivity"
+            android:label="Nhắc nhở hết hạn"/>
+        <activity android:name=".view.certificate.TagManagementActivity"
+            android:label="Quản lý Tags"/>
+        <activity android:name=".view.certificate.ArchiveActivity"
+            android:label="Chứng chỉ đã lưu trữ"/>
+        
+        <!-- Profile Activities -->
+        <activity android:name=".view.profile.ProfileShowcaseActivity"
+            android:label="Public Profile"/>
+        <activity android:name=".view.profile.SettingsActivity"
+            android:label="Cài đặt"/>
+        
+        <!-- Report Activities -->
+        <activity android:name=".view.report.ShareHistoryActivity"
+            android:label="Lịch sử chia sẻ"/>
+        <activity android:name=".view.report.ExportReportActivity"
+            android:label="Xuất báo cáo"/>
     </application>
 
 </manifest>

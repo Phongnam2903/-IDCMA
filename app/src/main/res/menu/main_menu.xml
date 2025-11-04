@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_search"
+        android:title="Tìm kiếm"
+        android:icon="@android:drawable/ic_menu_search"
+        android:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_dashboard"
+        android:title="Dashboard"
+        android:icon="@android:drawable/ic_menu_view"
+        android:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_profile"
+        android:title="Profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:showAsAction="ifRoom" />
+</menu>

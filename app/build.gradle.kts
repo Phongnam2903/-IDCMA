@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services") // Firebase plugin
 }
 
 android {
@@ -43,17 +42,15 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    //  Firebase BoM (quản lý version tự động)
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    // Room Database
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
 
-    // Các dịch vụ Firebase
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-messaging")
-
-    // Thư viện tiện ích thêm (gợi ý)
+    // Thư viện tiện ích thêm
     implementation("com.squareup.picasso:picasso:2.8") // load ảnh chứng chỉ
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.cardview:cardview:1.0.0")
+    
+    // Gson for TypeConverter (convert List<String> to JSON)
+    implementation("com.google.code.gson:gson:2.10.1")
 }
