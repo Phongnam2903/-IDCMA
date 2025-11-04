@@ -4,6 +4,9 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+
+import androidx.core.content.FileProvider;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -142,17 +145,26 @@ public class LocalStorageHelper {
     /**
      * Lấy URI từ file path
      */
-    public static Uri getUriFromPath(String filePath) {
+    public static Uri getUriFromPath(Context context, String filePath) {
         if (filePath == null || filePath.isEmpty()) {
             return null;
         }
-        
+
         File file = new File(filePath);
-        if (file.exists()) {
-            return Uri.fromFile(file);
+        if (!file.exists()) {
+            Log.e("LocalStorageHelper", "File không tồn tại tại đường dẫn: " + filePath);
+            return null;
         }
-        
-        return null;
+
+        try {
+            String providerAuthority = "com.example.idcma_project_prm392.provider";
+
+            return FileProvider.getUriForFile(context, providerAuthority, file);
+
+        } catch (IllegalArgumentException e) {
+            Log.e("LocalStorageHelper", "Lỗi tạo URI cho FileProvider. Bạn đã cấu hình provider_paths.xml và AndroidManifest.xml chưa? " + e.getMessage());
+            return null;
+        }
     }
 
     /**

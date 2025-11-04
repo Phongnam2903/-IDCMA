@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.idcma_project_prm392" />
+                  <option name="mobileSdkAppId" value="1:865316028307:android:728080e20b0e07ad027266" />
+                  <option name="projectId" value="prm392-project-idcma" />
+                  <option name="projectNumber" value="865316028307" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

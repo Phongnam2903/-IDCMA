@@ -1,27 +1,44 @@
 package com.example.idcma_project_prm392.view.certificate;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
 import com.example.idcma_project_prm392.utils.LocalStorageHelper;
+import com.example.idcma_project_prm392.worker.ReminderWorker;
 import com.google.android.material.card.MaterialCardView;
 import com.squareup.picasso.Picasso;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class CertificateDetailActivity extends AppCompatActivity {
 
@@ -32,6 +49,15 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private Button btnShare, btnEdit, btnDelete, btnViewFile;
     private ProgressBar progressBar;
     private View expiryWarningBanner;
+
+    private WorkManager workManager;
+    private SharedPreferences sharedPreferences;
+
+    private SwitchCompat reminderSwitch;
+    private Spinner reminderSpinner;
+
+    private static final String REMINDER_PREF_KEY_PREFIX = "reminder_pref_";
+    private static final String TAG = "CertDetailActivity";
 
     private CertificateRepository certificateRepository;
 
@@ -50,6 +76,9 @@ public class CertificateDetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Chi tiết chứng chỉ");
         }
+
+        workManager = WorkManager.getInstance(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Repository
         certificateRepository = new CertificateRepository(this);
@@ -90,6 +119,9 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnViewFile = findViewById(R.id.btnViewFile);
         progressBar = findViewById(R.id.progressBar);
         expiryWarningBanner = findViewById(R.id.expiryWarningBanner);
+
+        reminderSwitch = findViewById(R.id.switch_reminder);
+        reminderSpinner = findViewById(R.id.spinner_reminder_time);
     }
 
     private void setupButtonListeners() {
@@ -192,7 +224,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 
                 // Load image from local file path with Picasso
-                Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
+                Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
                 if (fileUri != null) {
                     Picasso.get()
                             .load(fileUri)
@@ -209,33 +241,204 @@ public class CertificateDetailActivity extends AppCompatActivity {
             cardFile.setVisibility(View.GONE);
             btnViewFile.setVisibility(View.GONE);
         }
+
+        if (certificate != null) {
+            setupReminderControls();
+        }
+    }
+
+    /**
+     * Cài đặt logic cho Switch và Spinner nhắc nhở
+     */
+    private void setupReminderControls() {
+        // 1. Cài đặt Spinner Adapter
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.reminder_options, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        reminderSpinner.setAdapter(adapter);
+
+        // 2. Kiểm tra SharedPreferences xem đã lưu cài đặt cho cert này chưa
+        // (Chúng ta dùng -1 nếu chưa cài)
+        String prefKey = REMINDER_PREF_KEY_PREFIX + certificateId;
+        int savedSelection = sharedPreferences.getInt(prefKey, -1);
+
+        if (savedSelection != -1) {
+            // Đã cài -> Bật Switch và chọn đúng Spinner
+            reminderSwitch.setChecked(true);
+            reminderSpinner.setVisibility(View.VISIBLE);
+            reminderSpinner.setSelection(savedSelection);
+        } else {
+            // Chưa cài -> Tắt Switch
+            reminderSwitch.setChecked(false);
+            reminderSpinner.setVisibility(View.GONE);
+        }
+
+        // 3. Xử lý sự kiện khi Bật/Tắt Switch
+        reminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Khi bật, hiển thị Spinner và đặt lịch
+                reminderSpinner.setVisibility(View.VISIBLE);
+                scheduleReminder();
+            } else {
+                // Khi tắt, ẩn Spinner và hủy lịch
+                reminderSpinner.setVisibility(View.GONE);
+                cancelReminder();
+            }
+        });
+
+        // 4. Xử lý sự kiện khi chọn Spinner (để đặt lại lịch)
+        reminderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (reminderSwitch.isChecked()) {
+                    scheduleReminder();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+    }
+
+    /**
+     * Lập lịch một tác vụ nhắc nhở bằng WorkManager
+     */
+    private void scheduleReminder() {
+        // 1. Lấy ngày hết hạn từ chứng chỉ
+        String expiryDateStr = certificate.getExpiryDate();
+        if (expiryDateStr == null || expiryDateStr.isEmpty() || expiryDateStr.equals("Không giới hạn")) {
+            Toast.makeText(this, "Không thể đặt lịch: không có ngày hết hạn", Toast.LENGTH_SHORT).show();
+            reminderSwitch.setChecked(false); // Tắt switch đi
+            return;
+        }
+
+        // 2. Chuyển đổi String (dd/MM/yyyy) sang Date
+        // QUAN TRỌNG: Đảm bảo format "dd/MM/yyyy" khớp với dữ liệu của bạn
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Date expirationDate;
+        try {
+            expirationDate = sdf.parse(expiryDateStr);
+        } catch (ParseException e) {
+            Log.e(TAG, "Lỗi parse ngày: " + expiryDateStr, e);
+            Toast.makeText(this, "Lỗi định dạng ngày", Toast.LENGTH_SHORT).show();
+            reminderSwitch.setChecked(false);
+            return;
+        }
+
+        // 3. Lấy lựa chọn từ Spinner
+        int selectionPosition = reminderSpinner.getSelectedItemPosition();
+        long remindBeforeDays;
+        switch (selectionPosition) {
+            case 0: remindBeforeDays = 7; break; // 1 tuần
+            case 1: remindBeforeDays = 30; break; // 1 tháng
+            case 2: remindBeforeDays = 90; break; // 3 tháng
+            default: remindBeforeDays = 7;
+        }
+
+        // 4. Tính toán thời gian delay
+        long expirationTimeMs = expirationDate.getTime();
+        long reminderTimeMs = expirationTimeMs - TimeUnit.DAYS.toMillis(remindBeforeDays);
+        long delayMs = reminderTimeMs - System.currentTimeMillis();
+
+        if (delayMs <= 0) {
+            Toast.makeText(this, "Ngày nhắc nhở đã ở trong quá khứ.", Toast.LENGTH_SHORT).show();
+            return; // Không đặt lịch
+        }
+
+        // 5. Chuẩn bị dữ liệu cho Worker
+        Data inputData = new Data.Builder()
+                .putString(ReminderWorker.KEY_CERT_ID, certificateId)
+                .putString(ReminderWorker.KEY_CERT_NAME, certificate.getName())
+                .build();
+
+        // 6. Tạo WorkRequest
+        OneTimeWorkRequest reminderWork = new OneTimeWorkRequest.Builder(ReminderWorker.class)
+                .setInitialDelay(15, TimeUnit.MILLISECONDS)
+                .setInputData(inputData)
+                .addTag(certificateId) // Dùng ID chứng chỉ làm Tag
+                .build();
+
+        // 7. Hủy lịch cũ (nếu có) và Lên lịch mới
+        workManager.cancelAllWorkByTag(certificateId); // Hủy lịch cũ
+        workManager.enqueue(reminderWork); // Đặt lịch mới
+
+        // 8. Lưu lựa chọn vào SharedPreferences
+        String prefKey = REMINDER_PREF_KEY_PREFIX + certificateId;
+        sharedPreferences.edit().putInt(prefKey, selectionPosition).apply();
+
+        Log.d(TAG, "Đã đặt lịch nhắc cho '" + certificate.getName() + "' sau " + (delayMs / 1000 / 60) + " phút.");
+        Toast.makeText(this, "Đã đặt lịch nhắc!", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Hủy lịch nhắc nhở cho chứng chỉ này
+     */
+    private void cancelReminder() {
+        // Hủy tất cả tác vụ có Tag là ID của chứng chỉ
+        workManager.cancelAllWorkByTag(certificateId);
+
+        // Xóa cài đặt đã lưu
+        String prefKey = REMINDER_PREF_KEY_PREFIX + certificateId;
+        sharedPreferences.edit().remove(prefKey).apply();
+
+        Toast.makeText(this, "Đã hủy lịch nhắc", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Đã hủy lịch nhắc cho: " + certificateId);
     }
 
     private void shareCertificate() {
         if (certificate == null) return;
 
+        // 1. Chuẩn bị nội dung Text (Giống như code cũ của bạn)
         StringBuilder shareText = new StringBuilder();
         shareText.append("📜 Chứng chỉ: ").append(certificate.getName()).append("\n");
         shareText.append("🏢 Tổ chức cấp: ").append(certificate.getIssuer()).append("\n");
-        shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate()).append("\n");
-        
-        if (certificate.getExpiryDate() != null && !certificate.getExpiryDate().isEmpty()) {
-            shareText.append("⏰ Hết hạn: ").append(certificate.getExpiryDate()).append("\n");
-        }
-        
-        if (certificate.getCredentialId() != null && !certificate.getCredentialId().isEmpty()) {
-            shareText.append("🆔 Mã: ").append(certificate.getCredentialId()).append("\n");
-        }
-        
-        if (certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
-            shareText.append("\n🔗 Link: ").append(certificate.getFileUrl());
-        }
+        shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate());
+        // ... (Thêm các trường khác nếu bạn muốn)
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
-        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
-        
+
+        // 2. Lấy đường dẫn file và kiểm tra
+        String filePath = certificate.getFileUrl();
+
+        // 3. KIỂM TRA: Nếu có file, chúng ta sẽ đính kèm file
+        if (filePath != null && !filePath.isEmpty() && LocalStorageHelper.fileExists(filePath)) {
+
+            // 4. LẤY URI AN TOÀN (Giống hệt hàm viewFullFile của bạn)
+            // Chúng ta giả định LocalStorageHelper.getUriFromPath đã dùng FileProvider
+            // Nếu hàm viewFullFile của bạn chạy được, thì hàm này cũng sẽ chạy được.
+            Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
+
+            if (fileUri != null) {
+                // Lấy loại file (MIME type)
+                String mimeType = getContentResolver().getType(fileUri);
+
+                // 5. ĐẶT URI VÀO INTENT
+                shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+                shareIntent.setType(mimeType); // Ví dụ: "image/jpeg" hoặc "application/pdf"
+
+                // 6. CẤP QUYỀN ĐỌC
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                // Thêm nội dung text vào
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+
+            } else {
+                // Nếu có lỗi khi lấy URI, chỉ chia sẻ text
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+            }
+
+        } else {
+            // 7. NẾU KHÔNG CÓ FILE: Chỉ chia sẻ text (Giống code cũ)
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+        }
+
+        // 8. Khởi chạy ShareSheet
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ qua"));
     }
 
@@ -304,7 +507,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
         
         // Get URI from file path
-        Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
+        Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
         if (fileUri == null) {
             Toast.makeText(this, "Không thể mở file", Toast.LENGTH_SHORT).show();
             return;
