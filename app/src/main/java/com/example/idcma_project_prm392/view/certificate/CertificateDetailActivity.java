@@ -354,7 +354,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         // 6. Tạo WorkRequest
         OneTimeWorkRequest reminderWork = new OneTimeWorkRequest.Builder(ReminderWorker.class)
-                .setInitialDelay(15, TimeUnit.MILLISECONDS)
+                .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
                 .setInputData(inputData)
                 .addTag(certificateId) // Dùng ID chứng chỉ làm Tag
                 .build();
