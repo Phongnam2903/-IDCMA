@@ -1,7 +1,9 @@
 package com.example.idcma_project_prm392.view.certificate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,6 +60,12 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         loadCertifications();
+
+        Button btnGoToShowcase = findViewById(R.id.btn_go_to_showcase);
+        btnGoToShowcase.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, CreateShowcaseActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void loadCertifications() {
