@@ -222,7 +222,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Tags Card (UPDATED: ChipGroup + Add Tag button) -->
+            <!-- Tags Card (ChipGroup + Add Tag button) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -366,6 +366,18 @@
             android:text="Sửa"
             android:textAllCaps="false"
             android:backgroundTint="#FF9800"
+            android:layout_marginEnd="4dp"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <!-- NEW: Archive button -->
+        <Button
+            android:id="@+id/btnArchive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Archive"
+            android:textAllCaps="false"
+            android:backgroundTint="#9E9E9E"
             android:layout_marginEnd="4dp"
             style="@style/Widget.MaterialComponents.Button"/>
 

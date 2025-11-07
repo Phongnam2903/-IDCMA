@@ -2,9 +2,11 @@ package com.example.idcma_project_prm392.view.certificate;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -24,7 +26,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private CertificateAdapter adapter;
-    private ArrayList<Certificate> certList = new ArrayList<>();
+    private final ArrayList<Certificate> certList = new ArrayList<>();
     private CertificateRepository certificateRepository;
     private SessionManager sessionManager;
     private ProgressBar progressBar;
@@ -35,7 +37,7 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // Khởi tạo Toolbar
+        // Toolbar
         Toolbar toolbar = findViewById(R.id.dashboardToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -43,17 +45,16 @@ public class DashboardActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Dashboard - Tổng quan chứng chỉ");
         }
 
-        // Ánh xạ view
+        // Views
         recyclerView = findViewById(R.id.recyclerCertifications);
         progressBar = findViewById(R.id.progressBar);
         tvEmptyState = findViewById(R.id.tvEmptyState);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
+
         certificateRepository = new CertificateRepository(this);
         sessionManager = new SessionManager(this);
 
-        // Khởi tạo adapter với danh sách trống
+        // Adapter
         adapter = new CertificateAdapter(certList);
         recyclerView.setAdapter(adapter);
 
@@ -61,47 +62,54 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void loadCertifications() {
-        progressBar.setVisibility(ProgressBar.VISIBLE);
-        
+        progressBar.setVisibility(View.VISIBLE);
+
         String currentUserId = sessionManager.getUserId();
-        
         if (currentUserId == null || !sessionManager.isLoggedIn()) {
-            progressBar.setVisibility(ProgressBar.GONE);
+            progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "Vui lòng đăng nhập để xem chứng chỉ", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Lấy chứng chỉ của user hiện tại từ Room Database
+        // Lấy chứng chỉ của user hiện tại, sau đó LỌC bỏ những cái đã archive
         new Thread(() -> {
-            List<Certificate> certificates = certificateRepository.getCertificatesByUserId(currentUserId);
-            
+            List<Certificate> all = certificateRepository.getCertificatesByUserId(currentUserId);
+
+            // Lọc active (isArchived == false)
+            List<Certificate> active = new ArrayList<>();
+            if (all != null) {
+                for (Certificate c : all) {
+                    if (c != null && !c.isArchived()) {
+                        active.add(c);
+                    }
+                }
+            }
+
             runOnUiThread(() -> {
-                progressBar.setVisibility(ProgressBar.GONE);
-                
+                progressBar.setVisibility(View.GONE);
+
                 certList.clear();
-                if (certificates != null) {
-                    certList.addAll(certificates);
-                }
-                
-                // Hiển thị empty state nếu không có chứng chỉ
+                certList.addAll(active);
+
+                // Empty state
                 if (certList.isEmpty()) {
-                    tvEmptyState.setVisibility(TextView.VISIBLE);
-                    recyclerView.setVisibility(RecyclerView.GONE);
+                    tvEmptyState.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
                 } else {
-                    tvEmptyState.setVisibility(TextView.GONE);
-                    recyclerView.setVisibility(RecyclerView.VISIBLE);
+                    tvEmptyState.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
                 }
-                
+
                 adapter.notifyDataSetChanged();
             });
         }).start();
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
-        // Reload certificates khi quay lại activity
+        // Reload lại để phản ánh thay đổi (Archive/Unarchive/Delete) từ màn chi tiết
         loadCertifications();
     }
 
