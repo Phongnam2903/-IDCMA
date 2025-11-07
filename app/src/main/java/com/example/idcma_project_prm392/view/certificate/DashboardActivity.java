@@ -2,6 +2,7 @@ package com.example.idcma_project_prm392.view.certificate;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -18,6 +19,8 @@ import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.SessionManager;
+import com.example.idcma_project_prm392.view.auth.ProfileActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,7 @@ public class DashboardActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private ProgressBar progressBar;
     private TextView tvEmptyState;
+    private FloatingActionButton fabAdd;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,7 +45,7 @@ public class DashboardActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.dashboardToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             getSupportActionBar().setTitle("Dashboard - Tổng quan chứng chỉ");
         }
 
@@ -60,6 +64,13 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         loadCertifications();
+
+        // FloatingActionButton để thêm chứng chỉ
+        fabAdd = findViewById(R.id.fabAdd);
+        fabAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, AddCertificateActivity.class);
+            startActivity(intent);
+        });
 
         Button btnGoToShowcase = findViewById(R.id.btn_go_to_showcase);
         btnGoToShowcase.setOnClickListener(v -> {
@@ -113,12 +124,30 @@ public class DashboardActivity extends AppCompatActivity {
         loadCertifications();
     }
 
+    // --- Thêm menu Profile & Search ---
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        // Ẩn menu Dashboard vì đã ở Dashboard rồi
+        MenuItem dashboardItem = menu.findItem(R.id.action_dashboard);
+        if (dashboardItem != null) {
+            dashboardItem.setVisible(false);
+        }
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.action_profile) {
+            startActivity(new Intent(DashboardActivity.this, ProfileActivity.class));
+            return true;
+        } else if (itemId == R.id.action_search) {
+            startActivity(new Intent(DashboardActivity.this, SearchFilterActivity.class));
             return true;
         }
+        
         return super.onOptionsItemSelected(item);
     }
 }
