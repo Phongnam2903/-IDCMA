@@ -16,6 +16,7 @@ import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.repository.UserRepository;
 import com.example.idcma_project_prm392.utils.SessionManager;
+import com.example.idcma_project_prm392.view.certificate.DashboardActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -36,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Nếu đã đăng nhập thì bỏ qua màn hình này
         if (sessionManager.isLoggedIn()) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
             finish();
             return;
         }
@@ -81,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
                     
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
