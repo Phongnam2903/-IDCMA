@@ -21,17 +21,28 @@ import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
 import com.example.idcma_project_prm392.utils.LocalStorageHelper;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CertificateDetailActivity extends AppCompatActivity {
 
     private TextView tvCertName, tvIssuer, tvCredentialId, tvIssueDate, tvExpiryDate;
-    private TextView tvStatus, tvTags, tvFileType;
+    private TextView tvStatus, tvFileType;
     private ImageView imgCertificate;
     private MaterialCardView cardFile;
     private Button btnShare, btnEdit, btnDelete, btnViewFile;
     private ProgressBar progressBar;
     private View expiryWarningBanner;
+
+    // TAG UI (NEW)
+    private ChipGroup chipGroupTags;
+    private MaterialButton btnAddTag;
 
     private CertificateRepository certificateRepository;
 
@@ -59,7 +70,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         // Get certificate ID from intent
         certificateId = getIntent().getStringExtra("CERTIFICATE_ID");
-
         if (certificateId == null || certificateId.isEmpty()) {
             Toast.makeText(this, "Không tìm thấy ID chứng chỉ", Toast.LENGTH_SHORT).show();
             finish();
@@ -80,7 +90,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         tvIssueDate = findViewById(R.id.tvIssueDate);
         tvExpiryDate = findViewById(R.id.tvExpiryDate);
         tvStatus = findViewById(R.id.tvStatus);
-        tvTags = findViewById(R.id.tvTags);
         tvFileType = findViewById(R.id.tvFileType);
         imgCertificate = findViewById(R.id.imgCertificate);
         cardFile = findViewById(R.id.cardFile);
@@ -90,6 +99,10 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnViewFile = findViewById(R.id.btnViewFile);
         progressBar = findViewById(R.id.progressBar);
         expiryWarningBanner = findViewById(R.id.expiryWarningBanner);
+
+        // NEW: tag views
+        chipGroupTags = findViewById(R.id.chipGroupTags);
+        btnAddTag = findViewById(R.id.btnAddTag);
     }
 
     private void setupButtonListeners() {
@@ -98,6 +111,11 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(v -> confirmDeleteCertificate());
         btnViewFile.setOnClickListener(v -> viewFullFile());
         imgCertificate.setOnClickListener(v -> viewFullFile());
+
+        // NEW: add tag
+        if (btnAddTag != null) {
+            btnAddTag.setOnClickListener(v -> showAddTagDialog());
+        }
     }
 
     private void loadCertificateDetails() {
@@ -108,10 +126,10 @@ public class CertificateDetailActivity extends AppCompatActivity {
             try {
                 long id = Long.parseLong(certificateId);
                 certificate = certificateRepository.getCertificateById(id);
-                
+
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    
+
                     if (certificate != null) {
                         displayCertificateDetails();
                     } else {
@@ -137,11 +155,11 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         // Dates
         tvIssueDate.setText(certificate.getIssueDate() != null ? certificate.getIssueDate() : "N/A");
-        
+
         String expiryDate = certificate.getExpiryDate();
         if (expiryDate != null && !expiryDate.isEmpty()) {
             tvExpiryDate.setText(expiryDate);
-            
+
             // Check if expiring soon
             if (DateUtils.isExpiringSoon(expiryDate)) {
                 expiryWarningBanner.setVisibility(View.VISIBLE);
@@ -164,23 +182,14 @@ public class CertificateDetailActivity extends AppCompatActivity {
             tvStatus.setBackgroundColor(0xFF4CAF50);
         }
 
-        // Tags
-        if (certificate.getTags() != null && !certificate.getTags().isEmpty()) {
-            StringBuilder tagsBuilder = new StringBuilder();
-            for (String tag : certificate.getTags()) {
-                tagsBuilder.append("#").append(tag).append("  ");
-            }
-            tvTags.setText(tagsBuilder.toString().trim());
-            tvTags.setVisibility(View.VISIBLE);
-        } else {
-            tvTags.setVisibility(View.GONE);
-        }
+        // NEW: Render tags with ChipGroup
+        renderTags(certificate.getTags());
 
         // File Display
         String filePath = certificate.getFileUrl(); // fileUrl is actually filePath now
         if (filePath != null && !filePath.isEmpty() && LocalStorageHelper.fileExists(filePath)) {
             cardFile.setVisibility(View.VISIBLE);
-            
+
             // Determine file type
             if (filePath.contains(".pdf")) {
                 tvFileType.setText("📄 PDF Document");
@@ -190,7 +199,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
                 // Image file
                 tvFileType.setText("🖼️ Image File");
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                
+
                 // Load image from local file path with Picasso
                 Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
                 if (fileUri != null) {
@@ -203,13 +212,102 @@ public class CertificateDetailActivity extends AppCompatActivity {
                     imgCertificate.setImageResource(android.R.drawable.ic_menu_gallery);
                 }
             }
-            
+
             btnViewFile.setVisibility(View.VISIBLE);
         } else {
             cardFile.setVisibility(View.GONE);
             btnViewFile.setVisibility(View.GONE);
         }
     }
+
+    // ========== TAGS: render / add / remove ==========
+
+    private void renderTags(List<String> tags) {
+        if (chipGroupTags == null) return;
+        chipGroupTags.removeAllViews();
+
+        if (tags == null || tags.isEmpty()) return;
+
+        for (String t : tags) {
+            Chip chip = new Chip(this);
+            chip.setText(t);
+            chip.setCloseIconVisible(true);   // show X to remove
+            chip.setCheckable(false);
+            chip.setOnCloseIconClickListener(v -> removeTag(t));
+            chipGroupTags.addView(chip);
+        }
+    }
+
+    private void removeTag(String tag) {
+        if (certificate == null) return;
+
+        new Thread(() -> {
+            try {
+                List<String> list = certificate.getTags() == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(certificate.getTags());
+                // remove case-insensitively
+                list.removeIf(s -> s.equalsIgnoreCase(tag));
+
+                certificate.setTags(list);
+                certificateRepository.updateCertificate(certificate); // persist
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Đã xoá tag", Toast.LENGTH_SHORT).show();
+                    renderTags(list);
+                });
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi xoá tag: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
+    private void showAddTagDialog() {
+        final android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("VD: Cloud, Java, Security");
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Add Tag")
+                .setView(input)
+                .setPositiveButton("Add", (d, w) -> {
+                    String raw = input.getText() == null ? "" : input.getText().toString();
+                    String tag = raw.trim().replaceAll("\\s+", " ");
+                    if (tag.isEmpty()) return;
+
+                    new Thread(() -> {
+                        try {
+                            List<String> list = certificate.getTags() == null
+                                    ? new ArrayList<>()
+                                    : new ArrayList<>(certificate.getTags());
+
+                            boolean exists = false;
+                            for (String s : list) {
+                                if (s.equalsIgnoreCase(tag)) { exists = true; break; }
+                            }
+                            if (!exists) list.add(tag);
+
+                            certificate.setTags(list);
+                            certificateRepository.updateCertificate(certificate);
+
+                            final boolean existed = exists;
+                            runOnUiThread(() -> {
+                                Toast.makeText(this,
+                                        existed ? "Tag đã tồn tại" : "Đã thêm tag",
+                                        Toast.LENGTH_SHORT).show();
+                                renderTags(list);
+                            });
+                        } catch (Exception e) {
+                            runOnUiThread(() ->
+                                    Toast.makeText(this, "Lỗi thêm tag: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        }
+                    }).start();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // =================================================
 
     private void shareCertificate() {
         if (certificate == null) return;
@@ -218,15 +316,15 @@ public class CertificateDetailActivity extends AppCompatActivity {
         shareText.append("📜 Chứng chỉ: ").append(certificate.getName()).append("\n");
         shareText.append("🏢 Tổ chức cấp: ").append(certificate.getIssuer()).append("\n");
         shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate()).append("\n");
-        
+
         if (certificate.getExpiryDate() != null && !certificate.getExpiryDate().isEmpty()) {
             shareText.append("⏰ Hết hạn: ").append(certificate.getExpiryDate()).append("\n");
         }
-        
+
         if (certificate.getCredentialId() != null && !certificate.getCredentialId().isEmpty()) {
             shareText.append("🆔 Mã: ").append(certificate.getCredentialId()).append("\n");
         }
-        
+
         if (certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
             shareText.append("\n🔗 Link: ").append(certificate.getFileUrl());
         }
@@ -235,16 +333,16 @@ public class CertificateDetailActivity extends AppCompatActivity {
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
-        
+
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ qua"));
     }
 
     private void editCertificate() {
-        // TODO: Implement edit functionality
+        // TODO: Implement edit functionality (yêu cầu 11)
         // Intent intent = new Intent(this, EditCertificateActivity.class);
         // intent.putExtra("CERTIFICATE_ID", certificateId);
         // startActivity(intent);
-        
+
         Toast.makeText(this, "Tính năng chỉnh sửa đang được phát triển", Toast.LENGTH_SHORT).show();
     }
 
@@ -265,15 +363,15 @@ public class CertificateDetailActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 long id = Long.parseLong(certificateId);
-                
+
                 // Delete file from local storage if exists
                 if (certificate != null && certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
                     LocalStorageHelper.deleteCertificateFile(this, certificate.getFileUrl());
                 }
-                
+
                 // Delete certificate from database
                 certificateRepository.deleteCertificateById(id);
-                
+
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "✅ Đã xóa chứng chỉ thành công", Toast.LENGTH_SHORT).show();
@@ -296,25 +394,25 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
 
         String filePath = certificate.getFileUrl();
-        
+
         // Check if file exists
         if (!LocalStorageHelper.fileExists(filePath)) {
             Toast.makeText(this, "File không tồn tại", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         // Get URI from file path
         Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
         if (fileUri == null) {
             Toast.makeText(this, "Không thể mở file", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         // Open file with external viewer
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(fileUri, getContentResolver().getType(fileUri));
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        
+
         try {
             startActivity(intent);
         } catch (Exception e) {
