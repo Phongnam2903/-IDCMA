@@ -48,6 +48,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private String certificateId;
     private Certificate certificate;
 
+    //them comment
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
