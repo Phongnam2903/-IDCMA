@@ -17,6 +17,7 @@ import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.view.auth.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
+import com.example.idcma_project_prm392.view.report.ShareRecordActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -112,6 +113,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.action_search) {
             startActivity(new Intent(MainActivity.this, com.example.idcma_project_prm392.view.certificate.SearchFilterActivity.class));
+            return true;
+        } else if (itemId == R.id.action_share_record){
+            startActivity(new Intent(MainActivity.this, ShareRecordActivity.class));
             return true;
         }
         

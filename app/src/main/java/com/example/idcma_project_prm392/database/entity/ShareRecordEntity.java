@@ -12,13 +12,13 @@ import androidx.room.PrimaryKey;
 public class ShareRecordEntity {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    private String id;
+    private long id;
 
     @ColumnInfo(name = "certificateId")
-    private String certificateId;
+    private long certificateId;
 
     @ColumnInfo(name = "user_id")
-    private String userId;          // owner who shared
+    private long userId;          // owner who shared
 
     @ColumnInfo(name = "recipient_email")
     private String recipientEmail;  // optional
@@ -38,7 +38,7 @@ public class ShareRecordEntity {
     public ShareRecordEntity() {}
 
     @Ignore
-    public ShareRecordEntity(String certificateId, String userId, String recipientEmail,
+    public ShareRecordEntity(long certificateId, long userId, String recipientEmail,
                              String shareDate, String link, boolean expired, String status) {
         this.certificateId = certificateId;
         this.userId = userId;
@@ -49,14 +49,14 @@ public class ShareRecordEntity {
         this.status = status;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
 
-    public String getCertificateId() { return certificateId; }
-    public void setCertificateId(String certificateId) { this.certificateId = certificateId; }
+    public long getCertificateId() { return certificateId; }
+    public void setCertificateId(long certificateId) { this.certificateId = certificateId; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public long getUserId() { return userId; }
+    public void setUserId(long userId) { this.userId = userId; }
 
     public String getRecipientEmail() { return recipientEmail; }
     public void setRecipientEmail(String recipientEmail) { this.recipientEmail = recipientEmail; }

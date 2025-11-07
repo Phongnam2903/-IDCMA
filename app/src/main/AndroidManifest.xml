@@ -13,55 +13,61 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IDCMA_Project_PRM392"
         tools:targetApi="31">
-
+        <activity
+            android:name=".view.report.ShareRecordActivity"
+            android:exported="false" />
         <!-- Màn hình đăng nhập (chạy đầu tiên khi mở app) -->
         <activity
             android:name=".view.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Màn hình chính -->
-        <activity android:name=".MainActivity" />
-
-        <!-- Màn hình đăng ký tài khoản -->
+        </activity> <!-- Màn hình chính -->
+        <activity android:name=".MainActivity" /> <!-- Màn hình đăng ký tài khoản -->
         <activity android:name=".view.auth.RegisterActivity" />
-        <activity android:name=".view.auth.ProfileActivity"/>
-        
-        <!-- Certificate Management Activities -->
-        <activity android:name=".view.certificate.DashboardActivity"
-            android:label="Dashboard"/>
-        <activity android:name=".view.certificate.AddCertificateActivity"
-            android:label="Thêm chứng chỉ"/>
-        <activity android:name=".view.certificate.SearchFilterActivity"
-            android:label="Tìm kiếm"/>
-        <activity android:name=".view.certificate.CertificateDetailActivity"
-            android:label="Chi tiết chứng chỉ"/>
-        <activity android:name=".view.certificate.EditCertificateActivity"
-            android:label="Chỉnh sửa chứng chỉ"/>
-        <activity android:name=".view.certificate.ShareCertificateActivity"
-            android:label="Chia sẻ chứng chỉ"/>
-        <activity android:name=".view.certificate.ReminderActivity"
-            android:label="Nhắc nhở hết hạn"/>
-        <activity android:name=".view.certificate.TagManagementActivity"
-            android:label="Quản lý Tags"/>
-        <activity android:name=".view.certificate.ArchiveActivity"
-            android:label="Chứng chỉ đã lưu trữ"/>
-        
-        <!-- Profile Activities -->
-        <activity android:name=".view.profile.ProfileShowcaseActivity"
-            android:label="Public Profile"/>
-        <activity android:name=".view.profile.SettingsActivity"
-            android:label="Cài đặt"/>
-        
-        <!-- Report Activities -->
-        <activity android:name=".view.report.ShareHistoryActivity"
-            android:label="Lịch sử chia sẻ"/>
-        <activity android:name=".view.report.ExportReportActivity"
-            android:label="Xuất báo cáo"/>
+        <activity android:name=".view.auth.ProfileActivity" /> <!-- Certificate Management Activities -->
+        <activity
+            android:name=".view.certificate.DashboardActivity"
+            android:label="Dashboard" />
+        <activity
+            android:name=".view.certificate.AddCertificateActivity"
+            android:label="Thêm chứng chỉ" />
+        <activity
+            android:name=".view.certificate.SearchFilterActivity"
+            android:label="Tìm kiếm" />
+        <activity
+            android:name=".view.certificate.CertificateDetailActivity"
+            android:label="Chi tiết chứng chỉ" />
+        <activity
+            android:name=".view.certificate.EditCertificateActivity"
+            android:label="Chỉnh sửa chứng chỉ" />
+        <activity
+            android:name=".view.certificate.ShareCertificateActivity"
+            android:label="Chia sẻ chứng chỉ" />
+        <activity
+            android:name=".view.certificate.ReminderActivity"
+            android:label="Nhắc nhở hết hạn" />
+        <activity
+            android:name=".view.certificate.TagManagementActivity"
+            android:label="Quản lý Tags" />
+        <activity
+            android:name=".view.certificate.ArchiveActivity"
+            android:label="Chứng chỉ đã lưu trữ" /> <!-- Profile Activities -->
+        <activity
+            android:name=".view.profile.ProfileShowcaseActivity"
+            android:label="Public Profile" />
+        <activity
+            android:name=".view.profile.SettingsActivity"
+            android:label="Cài đặt" /> <!-- Report Activities -->
+        <activity
+            android:name=".view.report.ShareHistoryActivity"
+            android:label="Lịch sử chia sẻ" />
+        <activity
+            android:name=".view.report.ExportReportActivity"
+            android:label="Xuất báo cáo" />
     </application>
 
 </manifest>
