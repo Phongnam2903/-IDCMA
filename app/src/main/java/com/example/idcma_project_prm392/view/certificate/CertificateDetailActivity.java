@@ -31,7 +31,11 @@ import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
 import com.example.idcma_project_prm392.utils.LocalStorageHelper;
 import com.example.idcma_project_prm392.worker.ReminderWorker;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -40,13 +44,16 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CertificateDetailActivity extends AppCompatActivity {
 
     private TextView tvCertName, tvIssuer, tvCredentialId, tvIssueDate, tvExpiryDate;
-    private TextView tvStatus, tvTags, tvFileType;
+    private TextView tvStatus, tvFileType;
     private ImageView imgCertificate;
     private MaterialCardView cardFile;
-    private Button btnShare, btnEdit, btnDelete, btnViewFile;
+    private Button btnShare, btnEdit, btnDelete, btnViewFile, btnArchive;
     private ProgressBar progressBar;
     private View expiryWarningBanner;
 
@@ -59,8 +66,11 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private static final String REMINDER_PREF_KEY_PREFIX = "reminder_pref_";
     private static final String TAG = "CertDetailActivity";
 
-    private CertificateRepository certificateRepository;
+    // Tags
+    private ChipGroup chipGroupTags;
+    private MaterialButton btnAddTag;
 
+    private CertificateRepository certificateRepository;
     private String certificateId;
     private Certificate certificate;
 
@@ -69,7 +79,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_certificate_detail);
 
-        // Setup Toolbar
+        // Toolbar
         Toolbar toolbar = findViewById(R.id.detailToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -80,25 +90,17 @@ public class CertificateDetailActivity extends AppCompatActivity {
         workManager = WorkManager.getInstance(this);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Initialize Repository
         certificateRepository = new CertificateRepository(this);
-
-        // Initialize views
         initViews();
 
-        // Get certificate ID from intent
         certificateId = getIntent().getStringExtra("CERTIFICATE_ID");
-
         if (certificateId == null || certificateId.isEmpty()) {
             Toast.makeText(this, "Không tìm thấy ID chứng chỉ", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Load certificate data
         loadCertificateDetails();
-
-        // Setup button listeners
         setupButtonListeners();
     }
 
@@ -109,7 +111,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         tvIssueDate = findViewById(R.id.tvIssueDate);
         tvExpiryDate = findViewById(R.id.tvExpiryDate);
         tvStatus = findViewById(R.id.tvStatus);
-        tvTags = findViewById(R.id.tvTags);
         tvFileType = findViewById(R.id.tvFileType);
         imgCertificate = findViewById(R.id.imgCertificate);
         cardFile = findViewById(R.id.cardFile);
@@ -117,11 +118,15 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnEdit = findViewById(R.id.btnEdit);
         btnDelete = findViewById(R.id.btnDelete);
         btnViewFile = findViewById(R.id.btnViewFile);
+        btnArchive = findViewById(R.id.btnArchive);
         progressBar = findViewById(R.id.progressBar);
         expiryWarningBanner = findViewById(R.id.expiryWarningBanner);
 
         reminderSwitch = findViewById(R.id.switch_reminder);
         reminderSpinner = findViewById(R.id.spinner_reminder_time);
+
+        chipGroupTags = findViewById(R.id.chipGroupTags);
+        btnAddTag = findViewById(R.id.btnAddTag);
     }
 
     private void setupButtonListeners() {
@@ -130,20 +135,18 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(v -> confirmDeleteCertificate());
         btnViewFile.setOnClickListener(v -> viewFullFile());
         imgCertificate.setOnClickListener(v -> viewFullFile());
+        if (btnAddTag != null) btnAddTag.setOnClickListener(v -> showAddTagDialog());
+        if (btnArchive != null) btnArchive.setOnClickListener(v -> toggleArchive());
     }
 
     private void loadCertificateDetails() {
         progressBar.setVisibility(View.VISIBLE);
-
-        // Load từ Room Database
         new Thread(() -> {
             try {
                 long id = Long.parseLong(certificateId);
                 certificate = certificateRepository.getCertificateById(id);
-                
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
-                    
                     if (certificate != null) {
                         displayCertificateDetails();
                     } else {
@@ -162,69 +165,59 @@ public class CertificateDetailActivity extends AppCompatActivity {
     }
 
     private void displayCertificateDetails() {
-        // Basic Information
+        // Basic
         tvCertName.setText(certificate.getName() != null ? certificate.getName() : "N/A");
         tvIssuer.setText(certificate.getIssuer() != null ? certificate.getIssuer() : "N/A");
         tvCredentialId.setText(certificate.getCredentialId() != null ? certificate.getCredentialId() : "Không có");
-
-        // Dates
         tvIssueDate.setText(certificate.getIssueDate() != null ? certificate.getIssueDate() : "N/A");
-        
+
+        // Status + nút Archive
+        if (certificate.isArchived()) {
+            tvStatus.setText("📦 Đã lưu trữ");
+            tvStatus.setBackgroundColor(0xFF9E9E9E);
+            if (btnArchive != null) btnArchive.setText("Unarchive");
+        } else {
+            tvStatus.setText("✅ Đang hoạt động");
+            tvStatus.setBackgroundColor(0xFF4CAF50);
+            if (btnArchive != null) btnArchive.setText("Archive");
+        }
+
+        // Expiry
         String expiryDate = certificate.getExpiryDate();
         if (expiryDate != null && !expiryDate.isEmpty()) {
             tvExpiryDate.setText(expiryDate);
-            
-            // Check if expiring soon
             if (DateUtils.isExpiringSoon(expiryDate)) {
                 expiryWarningBanner.setVisibility(View.VISIBLE);
-                tvExpiryDate.setTextColor(0xFFFF0000); // Red
+                tvExpiryDate.setTextColor(0xFFFF0000);
             } else {
                 expiryWarningBanner.setVisibility(View.GONE);
-                tvExpiryDate.setTextColor(0xFF666666); // Gray
+                tvExpiryDate.setTextColor(0xFF666666);
             }
         } else {
             tvExpiryDate.setText("Không giới hạn");
             expiryWarningBanner.setVisibility(View.GONE);
         }
 
-        // Status
-        if (certificate.isArchived()) {
-            tvStatus.setText("📦 Đã lưu trữ");
-            tvStatus.setBackgroundColor(0xFF9E9E9E);
-        } else {
-            tvStatus.setText("✅ Đang hoạt động");
-            tvStatus.setBackgroundColor(0xFF4CAF50);
-        }
-
         // Tags
-        if (certificate.getTags() != null && !certificate.getTags().isEmpty()) {
-            StringBuilder tagsBuilder = new StringBuilder();
-            for (String tag : certificate.getTags()) {
-                tagsBuilder.append("#").append(tag).append("  ");
-            }
-            tvTags.setText(tagsBuilder.toString().trim());
-            tvTags.setVisibility(View.VISIBLE);
-        } else {
-            tvTags.setVisibility(View.GONE);
-        }
+        renderTags(certificate.getTags());
 
-        // File Display
-        String filePath = certificate.getFileUrl(); // fileUrl is actually filePath now
+        // File
+        String filePath = certificate.getFileUrl();
         if (filePath != null && !filePath.isEmpty() && LocalStorageHelper.fileExists(filePath)) {
             cardFile.setVisibility(View.VISIBLE);
-            
-            // Determine file type
-            if (filePath.contains(".pdf")) {
+
+            String lower = filePath.toLowerCase();
+            if (lower.endsWith(".pdf")) {
                 tvFileType.setText("📄 PDF Document");
                 imgCertificate.setImageResource(android.R.drawable.ic_menu_gallery);
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER);
             } else {
-                // Image file
                 tvFileType.setText("🖼️ Image File");
                 imgCertificate.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 
                 // Load image from local file path with Picasso
                 Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
+                Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
                 if (fileUri != null) {
                     Picasso.get()
                             .load(fileUri)
@@ -235,7 +228,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
                     imgCertificate.setImageResource(android.R.drawable.ic_menu_gallery);
                 }
             }
-            
             btnViewFile.setVisibility(View.VISIBLE);
         } else {
             cardFile.setVisibility(View.GONE);
@@ -386,6 +378,130 @@ public class CertificateDetailActivity extends AppCompatActivity {
         Log.d(TAG, "Đã hủy lịch nhắc cho: " + certificateId);
     }
 
+    // ====== Tags ======
+
+    private void renderTags(List<String> tags) {
+        if (chipGroupTags == null) return;
+        chipGroupTags.removeAllViews();
+        if (tags == null || tags.isEmpty()) return;
+
+        for (String t : tags) {
+            Chip chip = new Chip(this);
+            chip.setText(t);
+            chip.setCloseIconVisible(true);
+            chip.setCheckable(false);
+            chip.setOnCloseIconClickListener(v -> removeTag(t));
+            chipGroupTags.addView(chip);
+        }
+    }
+
+    private void removeTag(String tag) {
+        if (certificate == null) return;
+        new Thread(() -> {
+            try {
+                List<String> list = certificate.getTags() == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(certificate.getTags());
+                // remove case-insensitively (không dùng removeIf để tránh yêu cầu API)
+                for (int i = list.size() - 1; i >= 0; i--) {
+                    String s = list.get(i);
+                    if (s != null && s.equalsIgnoreCase(tag)) list.remove(i);
+                }
+                certificate.setTags(list);
+                certificateRepository.updateCertificate(certificate);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Đã xoá tag", Toast.LENGTH_SHORT).show();
+                    renderTags(list);
+                });
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi xoá tag: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
+    private void showAddTagDialog() {
+        final android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("VD: Cloud, Java, Security");
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Add Tag")
+                .setView(input)
+                .setPositiveButton("Add", (d, w) -> {
+                    String raw = input.getText() == null ? "" : input.getText().toString();
+                    String tag = raw.trim().replaceAll("\\s+", " ");
+                    if (tag.isEmpty()) return;
+
+                    new Thread(() -> {
+                        try {
+                            List<String> list = certificate.getTags() == null
+                                    ? new ArrayList<>()
+                                    : new ArrayList<>(certificate.getTags());
+
+                            boolean exists = false;
+                            for (String s : list) {
+                                if (s != null && s.equalsIgnoreCase(tag)) { exists = true; break; }
+                            }
+                            if (!exists) list.add(tag);
+
+                            certificate.setTags(list);
+                            certificateRepository.updateCertificate(certificate);
+
+                            final boolean existed = exists;
+                            runOnUiThread(() -> {
+                                Toast.makeText(this,
+                                        existed ? "Tag đã tồn tại" : "Đã thêm tag",
+                                        Toast.LENGTH_SHORT).show();
+                                renderTags(list);
+                            });
+                        } catch (Exception e) {
+                            runOnUiThread(() ->
+                                    Toast.makeText(this, "Lỗi thêm tag: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        }
+                    }).start();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // ====== Archive / Unarchive ======
+
+    private void toggleArchive() {
+        if (certificate == null) return;
+
+        final boolean target = !certificate.isArchived();
+        String title = target ? "Lưu trữ chứng chỉ" : "Khôi phục chứng chỉ";
+        String msg   = target ? "Chuyển chứng chỉ vào mục lưu trữ?" : "Khôi phục chứng chỉ vào danh sách chính?";
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton("Xác nhận", (d, w) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    new Thread(() -> {
+                        try {
+                            certificate.setArchived(target);
+                            certificateRepository.updateCertificate(certificate);
+                            runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(this, target ? "Đã lưu trữ" : "Đã khôi phục", Toast.LENGTH_SHORT).show();
+                                displayCertificateDetails();
+                                setResult(RESULT_OK);
+                            });
+                        } catch (Exception e) {
+                            runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(this, "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+                        }
+                    }).start();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    // ====== Share / Edit / Delete / View file ======
+
     private void shareCertificate() {
         if (certificate == null) return;
 
@@ -395,6 +511,17 @@ public class CertificateDetailActivity extends AppCompatActivity {
         shareText.append("🏢 Tổ chức cấp: ").append(certificate.getIssuer()).append("\n");
         shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate());
         // ... (Thêm các trường khác nếu bạn muốn)
+        shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate()).append("\n");
+
+        if (certificate.getExpiryDate() != null && !certificate.getExpiryDate().isEmpty()) {
+            shareText.append("⏰ Hết hạn: ").append(certificate.getExpiryDate()).append("\n");
+        }
+        if (certificate.getCredentialId() != null && !certificate.getCredentialId().isEmpty()) {
+            shareText.append("🆔 Mã: ").append(certificate.getCredentialId()).append("\n");
+        }
+        if (certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
+            shareText.append("\n🔗 Link: ").append(certificate.getFileUrl());
+        }
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
@@ -439,16 +566,16 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
 
         // 8. Khởi chạy ShareSheet
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ qua"));
     }
 
     private void editCertificate() {
-        // TODO: Implement edit functionality
-        // Intent intent = new Intent(this, EditCertificateActivity.class);
-        // intent.putExtra("CERTIFICATE_ID", certificateId);
-        // startActivity(intent);
-        
-        Toast.makeText(this, "Tính năng chỉnh sửa đang được phát triển", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, EditCertificateActivity.class);
+        intent.putExtra("CERTIFICATE_ID", certificateId);
+        startActivity(intent);
     }
 
     private void confirmDeleteCertificate() {
@@ -463,24 +590,20 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
     private void deleteCertificate() {
         progressBar.setVisibility(View.VISIBLE);
-
-        // Delete from Room Database
         new Thread(() -> {
             try {
                 long id = Long.parseLong(certificateId);
-                
-                // Delete file from local storage if exists
+
                 if (certificate != null && certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
-                    LocalStorageHelper.deleteCertificateFile(this, certificate.getFileUrl());
+                    try { LocalStorageHelper.deleteCertificateFile(this, certificate.getFileUrl()); } catch (Exception ignore) {}
                 }
-                
-                // Delete certificate from database
+
                 certificateRepository.deleteCertificateById(id);
-                
+
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "✅ Đã xóa chứng chỉ thành công", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK); // Notify calling activity
+                    setResult(RESULT_OK);
                     finish();
                 });
             } catch (NumberFormatException e) {
@@ -499,8 +622,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
 
         String filePath = certificate.getFileUrl();
-        
-        // Check if file exists
         if (!LocalStorageHelper.fileExists(filePath)) {
             Toast.makeText(this, "File không tồn tại", Toast.LENGTH_SHORT).show();
             return;
@@ -508,16 +629,24 @@ public class CertificateDetailActivity extends AppCompatActivity {
         
         // Get URI from file path
         Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
+
+        Uri fileUri = LocalStorageHelper.getUriFromPath(filePath);
         if (fileUri == null) {
             Toast.makeText(this, "Không thể mở file", Toast.LENGTH_SHORT).show();
             return;
         }
-        
-        // Open file with external viewer
+
+        String lower = filePath.toLowerCase();
+        String mime = getContentResolver().getType(fileUri);
+        if (mime == null) {
+            if (lower.endsWith(".pdf")) mime = "application/pdf";
+            else mime = "image/*";
+        }
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(fileUri, getContentResolver().getType(fileUri));
+        intent.setDataAndType(fileUri, mime);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        
+
         try {
             startActivity(intent);
         } catch (Exception e) {
@@ -525,21 +654,17 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
     }
 
+    // ====== OS lifecycle ======
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
+        if (item.getItemId() == android.R.id.home) { finish(); return true; }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Reload data when returning from edit
-        if (certificateId != null) {
-            loadCertificateDetails();
-        }
+        if (certificateId != null) loadCertificateDetails();
     }
 }

@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.idcma_project_prm392.MainActivity;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.repository.UserRepository;
