@@ -22,7 +22,11 @@ import com.example.idcma_project_prm392.utils.SessionManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Log;
+
+
 public class DashboardActivity extends AppCompatActivity {
+    private static final String TAG = "DashboardActivity";
 
     private RecyclerView recyclerView;
     private CertificateAdapter adapter;
@@ -74,7 +78,16 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Lấy chứng chỉ của user hiện tại, sau đó LỌC bỏ những cái đã archive
         new Thread(() -> {
+            Log.d(TAG, "loadCertifications() start");
             List<Certificate> all = certificateRepository.getCertificatesByUserId(currentUserId);
+            Log.d(TAG, "all size = " + (all == null ? "null" : all.size()));
+
+            if (all != null) {
+                for (int i = 0; i < all.size(); i++) {
+                    Log.d(TAG, "Certificate all [" + i + "]: " + all.get(i));
+                }
+            }
+
 
             // Lọc active (isArchived == false)
             List<Certificate> active = new ArrayList<>();
