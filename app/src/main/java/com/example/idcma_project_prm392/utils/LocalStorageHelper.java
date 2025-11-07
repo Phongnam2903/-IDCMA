@@ -1,5 +1,6 @@
 package com.example.idcma_project_prm392.utils;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
@@ -49,6 +50,30 @@ public class LocalStorageHelper {
         
         return appDir;
     }
+
+    public static String importFromUri(Context ctx, Uri uri) {
+        try {
+            ContentResolver cr = ctx.getContentResolver();
+            String ext = null;
+            String mime = cr.getType(uri);
+            if (mime != null) {
+                String e = android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+                if (e != null && !e.isEmpty()) ext = e;
+            }
+            File out = new File(ctx.getFilesDir(), "cert_" + System.currentTimeMillis() + (ext != null ? "." + ext : ""));
+            try (InputStream in = cr.openInputStream(uri);
+                 FileOutputStream os = new FileOutputStream(out)) {
+                if (in == null) return null;
+                byte[] buf = new byte[8192];
+                int n; while ((n = in.read(buf)) > 0) os.write(buf, 0, n);
+                os.flush();
+            }
+            return out.getAbsolutePath();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     /**
      * Copy file từ URI vào local storage

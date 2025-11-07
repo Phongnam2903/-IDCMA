@@ -338,13 +338,11 @@ public class CertificateDetailActivity extends AppCompatActivity {
     }
 
     private void editCertificate() {
-        // TODO: Implement edit functionality (yêu cầu 11)
-        // Intent intent = new Intent(this, EditCertificateActivity.class);
-        // intent.putExtra("CERTIFICATE_ID", certificateId);
-        // startActivity(intent);
-
-        Toast.makeText(this, "Tính năng chỉnh sửa đang được phát triển", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, EditCertificateActivity.class);
+        intent.putExtra("CERTIFICATE_ID", certificateId);
+        startActivity(intent);
     }
+
 
     private void confirmDeleteCertificate() {
         new AlertDialog.Builder(this)
