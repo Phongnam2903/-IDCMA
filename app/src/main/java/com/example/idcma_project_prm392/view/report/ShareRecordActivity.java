@@ -2,24 +2,30 @@ package com.example.idcma_project_prm392.view.report;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View; // Import View
+import android.widget.TextView; // Import TextView
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager; // Import LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView; // Import RecyclerView
 
 import com.example.idcma_project_prm392.R;
+import com.example.idcma_project_prm392.adapter.ShareRecordAdapter; // Import Adapter mới
 import com.example.idcma_project_prm392.database.AppDatabase;
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
 import com.example.idcma_project_prm392.utils.SessionManager;
 
+import java.util.ArrayList; // Thêm ArrayList
 import java.util.List;
 
 public class ShareRecordActivity extends AppCompatActivity {
 
     private AppDatabase db;
-    private ListView listView;
+    private RecyclerView recyclerView; // Thay thế ListView bằng RecyclerView
+    private TextView tvEmptyState; // Thêm TextView trạng thái trống
+    private ShareRecordAdapter adapter; // Khai báo Adapter
     private SessionManager sessionManager;
 
     @Override
@@ -35,30 +41,45 @@ public class ShareRecordActivity extends AppCompatActivity {
         }
 
         sessionManager = new SessionManager(this);
-        listView = findViewById(R.id.listViewShare);
+        // Ánh xạ RecyclerView và TextView trạng thái trống
+        recyclerView = findViewById(R.id.recyclerViewShareRecord);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
         db = AppDatabase.getInstance(this);
+
+        // Thiết lập RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Khởi tạo Adapter với danh sách rỗng ban đầu
+        adapter = new ShareRecordAdapter(new ArrayList<>());
+        recyclerView.setAdapter(adapter);
 
         if (!sessionManager.isLoggedIn()) {
             Toast.makeText(this, "Vui lòng đăng nhập để xem các bản ghi chia sẻ", Toast.LENGTH_LONG).show();
+            // Ẩn RecyclerView, hiện trạng thái trống
+            recyclerView.setVisibility(View.GONE);
+            tvEmptyState.setText("Vui lòng đăng nhập");
+            tvEmptyState.setVisibility(View.VISIBLE);
             return;
         }
 
         String userId = sessionManager.getUserId();
 
+        // Tải dữ liệu trong luồng nền
         new Thread(() -> {
             List<ShareRecordEntity> records = db.shareRecordDao().getAllByUser(String.valueOf(userId));
 
             runOnUiThread(() -> {
                 if (records == null || records.isEmpty()) {
+                    // Hiển thị trạng thái trống
+                    recyclerView.setVisibility(View.GONE);
+                    tvEmptyState.setText("Chưa có lịch sử chia sẻ"); // Sử dụng text đã có trong layout
+                    tvEmptyState.setVisibility(View.VISIBLE);
                     Toast.makeText(this, "Không có bản ghi chia sẻ nào được tìm thấy", Toast.LENGTH_SHORT).show();
-                    listView.setAdapter(null);
                 } else {
-                    ArrayAdapter<ShareRecordEntity> adapter = new ArrayAdapter<>(
-                            this,
-                            android.R.layout.simple_list_item_1,
-                            records
-                    );
-                    listView.setAdapter(adapter);
+                    // Cập nhật dữ liệu cho Adapter
+                    adapter.updateList(records);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    tvEmptyState.setVisibility(View.GONE);
                     Toast.makeText(this, "Đã tải " + records.size() + " bản ghi chia sẻ.", Toast.LENGTH_SHORT).show();
                 }
             });
