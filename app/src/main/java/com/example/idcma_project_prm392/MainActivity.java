@@ -17,6 +17,7 @@ import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
 import com.example.idcma_project_prm392.view.auth.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
+import com.example.idcma_project_prm392.view.report.ExportReportActivity;
 import com.example.idcma_project_prm392.view.report.ShareRecordActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -117,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (itemId == R.id.action_share_record){
             startActivity(new Intent(MainActivity.this, ShareRecordActivity.class));
             return true;
+        } else if (itemId == R.id.action_export_report){
+            startActivity(new Intent(MainActivity.this, ExportReportActivity.class));
         }
         
         return super.onOptionsItemSelected(item);

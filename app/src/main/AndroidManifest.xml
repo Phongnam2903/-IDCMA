@@ -63,9 +63,6 @@
             android:name=".view.profile.SettingsActivity"
             android:label="Cài đặt" /> <!-- Report Activities -->
         <activity
-            android:name=".view.report.ShareHistoryActivity"
-            android:label="Lịch sử chia sẻ" />
-        <activity
             android:name=".view.report.ExportReportActivity"
             android:label="Xuất báo cáo" />
     </application>

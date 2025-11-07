@@ -23,9 +23,9 @@ import java.util.List;
 public class ShareRecordActivity extends AppCompatActivity {
 
     private AppDatabase db;
-    private RecyclerView recyclerView; // Thay thế ListView bằng RecyclerView
-    private TextView tvEmptyState; // Thêm TextView trạng thái trống
-    private ShareRecordAdapter adapter; // Khai báo Adapter
+    private RecyclerView recyclerView;
+    private TextView tvEmptyState;
+    private ShareRecordAdapter adapter;
     private SessionManager sessionManager;
 
     @Override
@@ -41,21 +41,17 @@ public class ShareRecordActivity extends AppCompatActivity {
         }
 
         sessionManager = new SessionManager(this);
-        // Ánh xạ RecyclerView và TextView trạng thái trống
         recyclerView = findViewById(R.id.recyclerViewShareRecord);
         tvEmptyState = findViewById(R.id.tvEmptyState);
         db = AppDatabase.getInstance(this);
 
-        // Thiết lập RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Khởi tạo Adapter với danh sách rỗng ban đầu
         adapter = new ShareRecordAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
         if (!sessionManager.isLoggedIn()) {
             Toast.makeText(this, "Vui lòng đăng nhập để xem các bản ghi chia sẻ", Toast.LENGTH_LONG).show();
-            // Ẩn RecyclerView, hiện trạng thái trống
             recyclerView.setVisibility(View.GONE);
             tvEmptyState.setText("Vui lòng đăng nhập");
             tvEmptyState.setVisibility(View.VISIBLE);
@@ -64,7 +60,6 @@ public class ShareRecordActivity extends AppCompatActivity {
 
         String userId = sessionManager.getUserId();
 
-        // Tải dữ liệu trong luồng nền
         new Thread(() -> {
             List<ShareRecordEntity> records = db.shareRecordDao().getAllByUser(String.valueOf(userId));
 
@@ -72,11 +67,10 @@ public class ShareRecordActivity extends AppCompatActivity {
                 if (records == null || records.isEmpty()) {
                     // Hiển thị trạng thái trống
                     recyclerView.setVisibility(View.GONE);
-                    tvEmptyState.setText("Chưa có lịch sử chia sẻ"); // Sử dụng text đã có trong layout
+                    tvEmptyState.setText("Chưa có lịch sử chia sẻ");
                     tvEmptyState.setVisibility(View.VISIBLE);
                     Toast.makeText(this, "Không có bản ghi chia sẻ nào được tìm thấy", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Cập nhật dữ liệu cho Adapter
                     adapter.updateList(records);
                     recyclerView.setVisibility(View.VISIBLE);
                     tvEmptyState.setVisibility(View.GONE);
