@@ -46,6 +46,7 @@
             android:label="Chi tiết chứng chỉ" />
         <activity
             android:name=".view.certificate.EditCertificateActivity"
+            android:exported="false"
             android:label="Chỉnh sửa chứng chỉ" />
         <activity
             android:name=".view.certificate.ShareCertificateActivity"

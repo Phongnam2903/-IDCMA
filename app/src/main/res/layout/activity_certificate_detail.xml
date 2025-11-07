@@ -222,7 +222,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Tags Card -->
+            <!-- Tags Card (ChipGroup + Add Tag button) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -245,11 +245,21 @@
                         android:textColor="@android:color/black"
                         android:layout_marginBottom="8dp"/>
 
-                    <TextView
-                        android:id="@+id/tvTags"
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupTags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="false"
+                        app:chipSpacingHorizontal="8dp"
+                        app:chipSpacingVertical="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddTag"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:text="Add Tag"
+                        android:layout_marginTop="8dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="#IT  #Android  #Developer"
                         android:textSize="14sp"
                         android:textColor="@color/teal_700"
                         android:visibility="gone"/>
@@ -382,6 +392,18 @@
             android:text="Sửa"
             android:textAllCaps="false"
             android:backgroundTint="#FF9800"
+            android:layout_marginEnd="4dp"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <!-- NEW: Archive button -->
+        <Button
+            android:id="@+id/btnArchive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Archive"
+            android:textAllCaps="false"
+            android:backgroundTint="#9E9E9E"
             android:layout_marginEnd="4dp"
             style="@style/Widget.MaterialComponents.Button"/>
 

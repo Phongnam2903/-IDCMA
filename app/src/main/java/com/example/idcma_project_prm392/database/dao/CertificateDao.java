@@ -14,7 +14,28 @@ import java.util.List;
  */
 @Dao
 public interface CertificateDao {
-    
+
+    // Active only
+    @Query("SELECT * FROM certificates WHERE is_archived = 0 ORDER BY id DESC")
+    List<CertificateEntity> getAllActiveCertificates();
+
+    @Query("SELECT * FROM certificates WHERE user_id = :userId AND is_archived = 0 ORDER BY id DESC")
+    List<CertificateEntity> getActiveCertificatesByUserId(String userId);
+
+    @Query("SELECT * FROM certificates WHERE is_archived = 0 AND name LIKE '%' || :keyword || '%' ORDER BY id DESC")
+    List<CertificateEntity> searchActiveCertificatesByName(String keyword);
+
+    @Query("SELECT * FROM certificates WHERE user_id = :userId AND is_archived = 0 AND name LIKE '%' || :keyword || '%' ORDER BY id DESC")
+    List<CertificateEntity> searchActiveCertificatesByUserIdAndName(String userId, String keyword);
+
+    // (tuỳ chọn) để làm màn “Archived”
+    @Query("SELECT * FROM certificates WHERE user_id = :userId AND is_archived = 1 ORDER BY id DESC")
+    List<CertificateEntity> getArchivedCertificatesByUserId(String userId);
+
+
+    @Query("SELECT * FROM certificates WHERE user_id = :userId AND is_archived = 0 ORDER BY id DESC")
+    List<CertificateEntity> getActiveByUserId(String userId);
+
     @Query("SELECT * FROM certificates")
     List<CertificateEntity> getAllCertificates();
 
