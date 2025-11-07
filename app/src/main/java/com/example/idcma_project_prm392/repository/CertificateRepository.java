@@ -20,7 +20,33 @@ public class CertificateRepository {
         AppDatabase db = AppDatabase.getInstance(context);
         this.certificateDao = db.certificateDao();
     }
-    
+
+    public List<Certificate> getAllActiveCertificates() {
+        return EntityMapper.toCertificateList(certificateDao.getAllActiveCertificates());
+    }
+
+    public List<Certificate> getActiveCertificatesByUserId(String userId) {
+        return EntityMapper.toCertificateList(certificateDao.getActiveCertificatesByUserId(userId));
+    }
+
+    public List<Certificate> searchActiveCertificatesByName(String keyword) {
+        return EntityMapper.toCertificateList(certificateDao.searchActiveCertificatesByName(keyword));
+    }
+
+    public List<Certificate> searchActiveCertificatesByUserIdAndName(String userId, String keyword) {
+        return EntityMapper.toCertificateList(certificateDao.searchActiveCertificatesByUserIdAndName(userId, keyword));
+    }
+
+    // (tuỳ chọn)
+    public List<Certificate> getArchivedCertificatesByUserId(String userId) {
+        return EntityMapper.toCertificateList(certificateDao.getArchivedCertificatesByUserId(userId));
+    }
+
+
+    public List<Certificate> getActiveByUserId(String userId) {
+        return EntityMapper.toCertificateList(certificateDao.getActiveByUserId(userId));
+    }
+
     public List<Certificate> getAllCertificates() {
         List<CertificateEntity> entities = certificateDao.getAllCertificates();
         return EntityMapper.toCertificateList(entities);

@@ -10,11 +10,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.idcma_project_prm392.MainActivity;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.repository.UserRepository;
 import com.example.idcma_project_prm392.utils.SessionManager;
+import com.example.idcma_project_prm392.view.certificate.DashboardActivity;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -118,8 +118,8 @@ public class RegisterActivity extends AppCompatActivity {
                     
                     Toast.makeText(this, "Đăng ký thành công! Chào mừng bạn, " + fullName + "!", Toast.LENGTH_SHORT).show();
                     
-                    // Chuyển sang MainActivity
-                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    // Chuyển sang DashboardActivity
+                    Intent intent = new Intent(RegisterActivity.this, DashboardActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();

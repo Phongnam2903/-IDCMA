@@ -1,11 +1,13 @@
 package com.example.idcma_project_prm392.utils;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
+
+import androidx.core.content.FileProvider;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +51,30 @@ public class LocalStorageHelper {
         
         return appDir;
     }
+
+    public static String importFromUri(Context ctx, Uri uri) {
+        try {
+            ContentResolver cr = ctx.getContentResolver();
+            String ext = null;
+            String mime = cr.getType(uri);
+            if (mime != null) {
+                String e = android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+                if (e != null && !e.isEmpty()) ext = e;
+            }
+            File out = new File(ctx.getFilesDir(), "cert_" + System.currentTimeMillis() + (ext != null ? "." + ext : ""));
+            try (InputStream in = cr.openInputStream(uri);
+                 FileOutputStream os = new FileOutputStream(out)) {
+                if (in == null) return null;
+                byte[] buf = new byte[8192];
+                int n; while ((n = in.read(buf)) > 0) os.write(buf, 0, n);
+                os.flush();
+            }
+            return out.getAbsolutePath();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     /**
      * Copy file từ URI vào local storage
@@ -142,17 +168,26 @@ public class LocalStorageHelper {
     /**
      * Lấy URI từ file path
      */
-    public static Uri getUriFromPath(String filePath) {
+    public static Uri getUriFromPath(Context context, String filePath) {
         if (filePath == null || filePath.isEmpty()) {
             return null;
         }
-        
+
         File file = new File(filePath);
-        if (file.exists()) {
-            return Uri.fromFile(file);
+        if (!file.exists()) {
+            Log.e("LocalStorageHelper", "File không tồn tại tại đường dẫn: " + filePath);
+            return null;
         }
-        
-        return null;
+
+        try {
+            String providerAuthority = "com.example.idcma_project_prm392.provider";
+
+            return FileProvider.getUriForFile(context, providerAuthority, file);
+
+        } catch (IllegalArgumentException e) {
+            Log.e("LocalStorageHelper", "Lỗi tạo URI cho FileProvider. Bạn đã cấu hình provider_paths.xml và AndroidManifest.xml chưa? " + e.getMessage());
+            return null;
+        }
     }
 
     /**
