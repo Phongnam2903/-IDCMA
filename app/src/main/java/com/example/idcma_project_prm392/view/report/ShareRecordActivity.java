@@ -61,7 +61,40 @@ public class ShareRecordActivity extends AppCompatActivity {
         String userId = sessionManager.getUserId();
 
         new Thread(() -> {
-            List<ShareRecordEntity> records = db.shareRecordDao().getAllByUser(String.valueOf(userId));
+            // Xóa dữ liệu cũ (nếu muốn)
+            db.shareRecordDao().clearAll();
+
+            // Thêm dữ liệu demo
+            db.shareRecordDao().insert(new ShareRecordEntity(
+                    1,          // certificateId
+                    Long.parseLong(userId),       // userId
+                    "alice@example.com",   // recipientEmail
+                    "07/11/2025 10:00",    // shareDate
+                    "https://example.com/share/1", // link
+                    false,      // expired
+                    "Active"    // status
+            ));
+
+            db.shareRecordDao().insert(new ShareRecordEntity(
+                    2,
+                    Long.parseLong(userId),
+                    "bob@example.com",
+                    "06/11/2025 09:30",
+                    "https://example.com/share/2",
+                    false,
+                    "Active"
+            ));
+
+            db.shareRecordDao().insert(new ShareRecordEntity(
+                    3,
+                    Long.parseLong(userId),
+                    "charlie@example.com",
+                    "05/11/2025 08:45",
+                    "https://example.com/share/3",
+                    true,
+                    "Expired"
+            ));
+            List<ShareRecordEntity> records = db.shareRecordDao().getAllByUser(userId);
 
             runOnUiThread(() -> {
                 if (records == null || records.isEmpty()) {
