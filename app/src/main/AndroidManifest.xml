@@ -47,6 +47,19 @@
             android:label="Chỉnh sửa chứng chỉ"/>
         <activity android:name=".view.certificate.ShareCertificateActivity"
             android:label="Chia sẻ chứng chỉ"/>
+        <activity android:name=".view.certificate.ViewSharedCertificateActivity"
+            android:label="Chứng chỉ được chia sẻ"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Deep link: idcma://certificate/view?token=TOKEN -->
+                <data android:scheme="idcma" android:host="certificate" android:pathPrefix="/view" />
+                <!-- URL: https://idcma.app/certificate/TOKEN -->
+                <data android:scheme="https" android:host="idcma.app" android:pathPrefix="/certificate" />
+            </intent-filter>
+        </activity>
         <activity android:name=".view.certificate.ReminderActivity"
             android:label="Nhắc nhở hết hạn"/>
         <activity android:name=".view.certificate.TagManagementActivity"

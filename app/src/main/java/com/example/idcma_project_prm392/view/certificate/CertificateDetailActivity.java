@@ -28,9 +28,13 @@ import androidx.work.WorkManager;
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
+import com.example.idcma_project_prm392.repository.ShareRecordRepository;
 import com.example.idcma_project_prm392.utils.DateUtils;
 import com.example.idcma_project_prm392.utils.LocalStorageHelper;
+import com.example.idcma_project_prm392.utils.SessionManager;
 import com.example.idcma_project_prm392.worker.ReminderWorker;
+import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
@@ -38,12 +42,18 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.picasso.Picasso;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class CertificateDetailActivity extends AppCompatActivity {
@@ -70,6 +80,8 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
     private CertificateRepository certificateRepository;
+    private ShareRecordRepository shareRecordRepository;
+    private SessionManager sessionManager;
     private String certificateId;
     private Certificate certificate;
 
@@ -90,6 +102,8 @@ public class CertificateDetailActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         certificateRepository = new CertificateRepository(this);
+        shareRecordRepository = new ShareRecordRepository(this);
+        sessionManager = new SessionManager(this);
         initViews();
 
         certificateId = getIntent().getStringExtra("CERTIFICATE_ID");
@@ -498,6 +512,118 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
     private void shareCertificate() {
         if (certificate == null) return;
+        showShareBottomSheet();
+    }
+
+    private void showShareBottomSheet() {
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_share, null);
+        bottomSheet.setContentView(sheetView);
+
+        MaterialButton btnGenerateLink = sheetView.findViewById(R.id.btnGenerateLink);
+        MaterialButton btnShareEmail = sheetView.findViewById(R.id.btnShareEmail);
+        MaterialButton btnShareOther = sheetView.findViewById(R.id.btnShareOther);
+        TextView tvShareLink = sheetView.findViewById(R.id.tvShareLink);
+        MaterialButton btnCopyLink = sheetView.findViewById(R.id.btnCopyLink);
+
+        btnGenerateLink.setOnClickListener(v -> {
+            String secureLink = generateSecureLink();
+            if (secureLink != null) {
+                tvShareLink.setText(secureLink);
+                tvShareLink.setVisibility(View.VISIBLE);
+                btnCopyLink.setVisibility(View.VISIBLE);
+                Toast.makeText(this, "Đã tạo link bảo mật!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnCopyLink.setOnClickListener(v -> {
+            String link = tvShareLink.getText().toString();
+            if (!link.isEmpty()) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Secure Link", link);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, "Đã sao chép link!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnShareEmail.setOnClickListener(v -> {
+            bottomSheet.dismiss();
+            shareViaEmail();
+        });
+
+        btnShareOther.setOnClickListener(v -> {
+            bottomSheet.dismiss();
+            shareViaOther();
+        });
+
+        bottomSheet.show();
+    }
+
+    private String generateSecureLink() {
+        if (certificate == null || certificateId == null) return null;
+
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        // Generate unique token
+        String shareToken = UUID.randomUUID().toString().replace("-", "");
+
+        // Calculate expiration date (30 days from now)
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 30);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        String expirationDate = sdf.format(calendar.getTime());
+
+        // Current date
+        String shareDate = sdf.format(new Date());
+
+        // Create ShareRecord
+        ShareRecordEntity shareRecord = new ShareRecordEntity(
+                certificateId,
+                userId,
+                null, // recipientEmail - optional
+                shareDate,
+                shareToken,
+                expirationDate,
+                false, // isExpired
+                "Active" // status
+        );
+
+        // Save to database
+        new Thread(() -> {
+            try {
+                shareRecordRepository.insertShareRecord(shareRecord);
+                runOnUiThread(() -> {
+                    Log.d(TAG, "ShareRecord saved: " + shareToken);
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    Log.e(TAG, "Error saving ShareRecord", e);
+                });
+            }
+        }).start();
+
+        // Generate secure link (local URL format)
+        // Format: idcma://certificate/view?token=SHARE_TOKEN
+        String secureLink = "idcma://certificate/view?token=" + shareToken;
+        
+        // For sharing, we can also create a more readable format
+        // Format: https://idcma.app/certificate/TOKEN (even though it's local)
+        String readableLink = "https://idcma.app/certificate/" + shareToken + "\n\n" +
+                "Token: " + shareToken + "\n" +
+                "Hết hạn: " + expirationDate;
+
+        return readableLink;
+    }
+
+    private void shareViaEmail() {
+        if (certificate == null) return;
+
+        String secureLink = generateSecureLink();
+        if (secureLink == null) return;
 
         StringBuilder shareText = new StringBuilder();
         shareText.append("📜 Chứng chỉ: ").append(certificate.getName()).append("\n");
@@ -510,9 +636,40 @@ public class CertificateDetailActivity extends AppCompatActivity {
         if (certificate.getCredentialId() != null && !certificate.getCredentialId().isEmpty()) {
             shareText.append("🆔 Mã: ").append(certificate.getCredentialId()).append("\n");
         }
-        if (certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
-            shareText.append("\n🔗 Link: ").append(certificate.getFileUrl());
+
+        shareText.append("\n🔗 Link bảo mật:\n").append(secureLink);
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("message/rfc822");
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+        emailIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Gửi email qua"));
+        } catch (Exception e) {
+            Toast.makeText(this, "Không tìm thấy ứng dụng email", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void shareViaOther() {
+        if (certificate == null) return;
+
+        String secureLink = generateSecureLink();
+        if (secureLink == null) return;
+
+        StringBuilder shareText = new StringBuilder();
+        shareText.append("📜 Chứng chỉ: ").append(certificate.getName()).append("\n");
+        shareText.append("🏢 Tổ chức cấp: ").append(certificate.getIssuer()).append("\n");
+        shareText.append("📅 Ngày cấp: ").append(certificate.getIssueDate()).append("\n");
+
+        if (certificate.getExpiryDate() != null && !certificate.getExpiryDate().isEmpty()) {
+            shareText.append("⏰ Hết hạn: ").append(certificate.getExpiryDate()).append("\n");
+        }
+        if (certificate.getCredentialId() != null && !certificate.getCredentialId().isEmpty()) {
+            shareText.append("🆔 Mã: ").append(certificate.getCredentialId()).append("\n");
+        }
+
+        shareText.append("\n🔗 Link bảo mật:\n").append(secureLink);
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");

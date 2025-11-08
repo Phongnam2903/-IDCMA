@@ -26,28 +26,51 @@
         android:textColor="@android:color/black"
         android:layout_marginBottom="8dp"/>
 
-    <com.google.android.material.chip.ChipGroup
+    <!-- Quick Filters Section -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipExpiringSoon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚠️ Sắp hết hạn"
+        android:checkable="true"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+
+    <!-- Archive Filter Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Trạng thái"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroupArchive"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:singleSelection="false">
+        android:layout_marginBottom="16dp">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipExpiringSoon"
-            android:layout_width="wrap_content"
+        <RadioButton
+            android:id="@+id/radioArchiveActive"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="⚠️ Sắp hết hạn"
-            android:checkable="true"
-            style="@style/Widget.MaterialComponents.Chip.Filter"/>
+            android:text="✅ Chỉ hiển thị Active"
+            android:checked="true"/>
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipArchived"
-            android:layout_width="wrap_content"
+        <RadioButton
+            android:id="@+id/radioArchiveArchived"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📦 Đã lưu trữ"
-            android:checkable="true"
-            style="@style/Widget.MaterialComponents.Chip.Filter"/>
-    </com.google.android.material.chip.ChipGroup>
+            android:text="📦 Chỉ hiển thị Archived"/>
+
+        <RadioButton
+            android:id="@+id/radioArchiveAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📋 Hiển thị tất cả"/>
+    </RadioGroup>
 
     <!-- Divider -->
     <View
