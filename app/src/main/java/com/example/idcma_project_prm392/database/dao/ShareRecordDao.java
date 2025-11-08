@@ -6,7 +6,10 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+import androidx.room.Delete;
+
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
+
 import java.util.List;
 
 /**
@@ -15,22 +18,24 @@ import java.util.List;
 @Dao
 public interface ShareRecordDao {
 
-    @Query("SELECT * FROM share_records WHERE user_id = :userId ORDER BY share_date DESC")
+    @Insert
+    void insert(ShareRecordEntity shareRecord);
+    @Query("SELECT * FROM share_record WHERE user_id = :userId ORDER BY share_date DESC")
     List<ShareRecordEntity> getShareRecordsByUserId(String userId);
 
-    @Query("SELECT * FROM share_records WHERE certificate_id = :certificateId ORDER BY share_date DESC")
+    @Query("SELECT * FROM share_record WHERE certificate_id = :certificateId ORDER BY share_date DESC")
     List<ShareRecordEntity> getShareRecordsByCertificateId(String certificateId);
 
-    @Query("SELECT * FROM share_records WHERE share_token = :token")
+    @Query("SELECT * FROM share_record WHERE share_token = :token")
     ShareRecordEntity getShareRecordByToken(String token);
 
-    @Query("SELECT * FROM share_records WHERE user_id = :userId AND certificate_id = :certificateId ORDER BY share_date DESC")
+    @Query("SELECT * FROM share_record WHERE user_id = :userId AND certificate_id = :certificateId ORDER BY share_date DESC")
     List<ShareRecordEntity> getShareRecordsByUserIdAndCertificateId(String userId, String certificateId);
 
-    @Query("SELECT * FROM share_records WHERE is_expired = 0 AND status = 'Active'")
+    @Query("SELECT * FROM share_record WHERE is_expired = 0 AND status = 'Active'")
     List<ShareRecordEntity> getActiveShareRecords();
 
-    @Query("SELECT * FROM share_records WHERE user_id = :userId AND is_expired = 0 AND status = 'Active' ORDER BY share_date DESC")
+    @Query("SELECT * FROM share_record WHERE user_id = :userId AND is_expired = 0 AND status = 'Active' ORDER BY share_date DESC")
     List<ShareRecordEntity> getActiveShareRecordsByUserId(String userId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -42,10 +47,16 @@ public interface ShareRecordDao {
     @Delete
     void deleteShareRecord(ShareRecordEntity shareRecord);
 
-    @Query("DELETE FROM share_records WHERE id = :id")
+    @Query("SELECT * FROM share_record WHERE user_id = :userId")
+    List<ShareRecordEntity> getAllByUser(String userId);
+    @Query("DELETE FROM share_record WHERE id = :id")
     void deleteShareRecordById(long id);
 
-    @Query("UPDATE share_records SET is_expired = 1, status = 'Expired' WHERE expiration_date < :currentDate AND is_expired = 0")
+    @Query("SELECT * FROM share_record WHERE id = :id LIMIT 1")
+    ShareRecordEntity getById(long id);
+    @Query("UPDATE share_record SET is_expired = 1, status = 'Expired' WHERE expiration_date < :currentDate AND is_expired = 0")
     void markExpiredRecords(String currentDate);
-}
 
+    @Query("DELETE FROM share_record")
+    void clearAll();
+}

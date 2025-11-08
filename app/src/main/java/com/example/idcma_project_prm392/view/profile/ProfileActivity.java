@@ -1,71 +1,56 @@
-package com.example.idcma_project_prm392.view.auth;
+package com.example.idcma_project_prm392.view.profile;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.idcma_project_prm392.R;
-import com.example.idcma_project_prm392.model.User;
-import com.example.idcma_project_prm392.repository.UserRepository;
+import com.example.idcma_project_prm392.database.AppDatabase;
+import com.example.idcma_project_prm392.database.dao.UserDao;
+import com.example.idcma_project_prm392.database.entity.UserEntity;
 import com.example.idcma_project_prm392.utils.SessionManager;
+import com.example.idcma_project_prm392.view.auth.LoginActivity;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private TextView tvFullName, tvEmail;
-    private Button btnLogout;
+    private EditText etFullName, etEmail;
+    private Switch switch2FA;
+    private Button btnUpdate, btnLogout;
+
     private SessionManager sessionManager;
-    private UserRepository userRepository;
+    private UserDao userDAO;
+    private UserEntity currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        tvFullName = findViewById(R.id.tvFullName);
-        tvEmail = findViewById(R.id.tvEmail);
+        Toolbar toolbar = findViewById(R.id.profileToolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        etFullName = findViewById(R.id.etFullName);
+        etEmail = findViewById(R.id.etEmail);
+        switch2FA = findViewById(R.id.switch2FA);
+        btnUpdate = findViewById(R.id.btnUpdate);
         btnLogout = findViewById(R.id.btnLogout);
 
         sessionManager = new SessionManager(this);
-        userRepository = new UserRepository(this);
+        userDAO = AppDatabase.getInstance(this).userDao();
 
-        // Load user info from session
-        String email = sessionManager.getUserEmail();
-        String fullName = sessionManager.getUserName();
-        String userId = sessionManager.getUserId();
+        loadUserInfo();
 
-        if (email != null && !email.isEmpty()) {
-            tvEmail.setText(email);
-        }
-
-        if (fullName != null && !fullName.isEmpty()) {
-            tvFullName.setText("Xin chào, " + fullName);
-        } else if (email != null && !email.isEmpty()) {
-            tvFullName.setText("Xin chào, " + email.split("@")[0]);
-        } else {
-            tvFullName.setText("Xin chào");
-        }
-
-        // Load full user info from database if needed
-        if (userId != null && !userId.isEmpty()) {
-            new Thread(() -> {
-                try {
-                    long id = Long.parseLong(userId);
-                    User user = userRepository.getUserById(id);
-                    
-                    runOnUiThread(() -> {
-                        if (user != null && user.getFullName() != null && !user.getFullName().isEmpty()) {
-                            tvFullName.setText("Xin chào, " + user.getFullName());
-                        }
-                    });
-                } catch (NumberFormatException e) {
-                    // Ignore
-                }
-            }).start();
-        }
+        btnUpdate.setOnClickListener(v -> updateProfile());
 
         btnLogout.setOnClickListener(v -> {
             sessionManager.logout();
@@ -73,5 +58,64 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
             finishAffinity();
         });
+
+        switch2FA.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (currentUser != null) {
+                currentUser.setTwoFactorEnabled(isChecked);
+                new Thread(() -> userDAO.updateTwoFactor(currentUser.getId(), isChecked)).start();
+            }
+        });
+    }
+
+    private void loadUserInfo() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) return;
+
+        new Thread(() -> {
+            try {
+                long id = Long.parseLong(userId);
+                currentUser = userDAO.getUserById(id);
+
+                runOnUiThread(() -> {
+                    if (currentUser != null) {
+                        etFullName.setText(currentUser.getFullName());
+                        etEmail.setText(currentUser.getEmail());
+                        switch2FA.setChecked(currentUser.getTwoFactorEnabled());
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void updateProfile() {
+        if (currentUser == null) return;
+
+        String newName = etFullName.getText().toString().trim();
+        String newEmail = etEmail.getText().toString().trim();
+
+        if (newName.isEmpty() || newEmail.isEmpty()) {
+            Toast.makeText(this, "Tên và email không được để trống", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        currentUser.setFullName(newName);
+        currentUser.setEmail(newEmail);
+
+        new Thread(() -> {
+            userDAO.updateUser(currentUser);
+            runOnUiThread(() ->
+                    Toast.makeText(this, "Cập nhật hồ sơ thành công!", Toast.LENGTH_SHORT).show());
+        }).start();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

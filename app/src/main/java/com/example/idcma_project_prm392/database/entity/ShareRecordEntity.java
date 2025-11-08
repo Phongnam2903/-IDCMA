@@ -2,12 +2,13 @@ package com.example.idcma_project_prm392.database.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
- * Entity class cho ShareRecord trong Room Database
+ * Entity class cho Share Record trong Room Database
  */
-@Entity(tableName = "share_records")
+@Entity(tableName = "share_record")
 public class ShareRecordEntity {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -17,28 +18,33 @@ public class ShareRecordEntity {
     private String certificateId;
 
     @ColumnInfo(name = "user_id")
-    private String userId; // owner who shared
+    private String userId;
 
     @ColumnInfo(name = "recipient_email")
-    private String recipientEmail; // optional
+    private String recipientEmail;
 
     @ColumnInfo(name = "share_date")
-    private String shareDate; // dd/MM/yyyy HH:mm
+    private String shareDate;
 
+    @ColumnInfo(name = "link")
+    private String link;
     @ColumnInfo(name = "share_token")
-    private String shareToken; // unique token for secure link
+    private String shareToken;
 
+    @ColumnInfo(name = "expired")
+    private boolean expired;
     @ColumnInfo(name = "expiration_date")
-    private String expirationDate; // dd/MM/yyyy HH:mm
+    private String expirationDate;
 
     @ColumnInfo(name = "is_expired")
     private boolean isExpired;
 
     @ColumnInfo(name = "status")
-    private String status; // "Active", "Expired", "Revoked"
+    private String status;
 
     public ShareRecordEntity() {}
 
+    @Ignore
     public ShareRecordEntity(String certificateId, String userId, String recipientEmail,
                            String shareDate, String shareToken, String expirationDate,
                            boolean isExpired, String status) {
@@ -46,6 +52,8 @@ public class ShareRecordEntity {
         this.userId = userId;
         this.recipientEmail = recipientEmail;
         this.shareDate = shareDate;
+        this.link = link;
+        this.expired = expired;
         this.shareToken = shareToken;
         this.expirationDate = expirationDate;
         this.isExpired = isExpired;
@@ -68,16 +76,22 @@ public class ShareRecordEntity {
     public String getShareDate() { return shareDate; }
     public void setShareDate(String shareDate) { this.shareDate = shareDate; }
 
+    public String getLink() { return link; }
+    public void setLink(String link) { this.link = link; }
     public String getShareToken() { return shareToken; }
     public void setShareToken(String shareToken) { this.shareToken = shareToken; }
 
+    public boolean isExpired() { return expired; }
+    public void setExpired(boolean expired) { this.expired = expired; }
     public String getExpirationDate() { return expirationDate; }
     public void setExpirationDate(String expirationDate) { this.expirationDate = expirationDate; }
 
-    public boolean isExpired() { return isExpired; }
-    public void setExpired(boolean expired) { isExpired = expired; }
-
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    @Override
+    public String toString() {
+        return "ShareRecord{id='" + id + "', certificateId='" + certificateId + "', recipient='" + recipientEmail + "', status='" + status + "'}";
+    }
 }
 

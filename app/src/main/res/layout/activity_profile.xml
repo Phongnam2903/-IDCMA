@@ -1,33 +1,80 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="24dp"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvFullName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Họ và tên"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/tvEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textSize="16sp"
-        android:layout_marginBottom="32dp"/>
-
-    <Button
-        android:id="@+id/btnLogout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Đăng xuất"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"/>
-</LinearLayout>
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/profileToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:elevation="4dp"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:title="Quản lý hồ sơ"
+            app:titleTextColor="@android:color/white" />
+
+        <EditText
+            android:id="@+id/etFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tên đầy đủ"
+            android:layout_marginTop="24dp"
+            android:padding="10dp"
+            android:inputType="textPersonName" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:layout_marginTop="12dp"
+            android:padding="10dp"
+            android:inputType="textEmailAddress" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Xác thực 2 lớp (2FA)"
+                android:textSize="16sp" />
+
+            <Switch
+                android:id="@+id/switch2FA"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@+id/textView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <Button
+            android:id="@+id/btnUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lưu thay đổi"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đăng xuất"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/design_default_color_error"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</ScrollView>

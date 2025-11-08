@@ -11,6 +11,8 @@ import com.example.idcma_project_prm392.database.dao.ShareRecordDao;
 import com.example.idcma_project_prm392.database.dao.UserDao;
 import com.example.idcma_project_prm392.database.entity.CertificateEntity;
 import com.example.idcma_project_prm392.database.entity.ProfileEntity;
+import com.example.idcma_project_prm392.database.entity.SettingsEntity;
+import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
 import com.example.idcma_project_prm392.database.entity.UserEntity;
 
@@ -18,7 +20,7 @@ import com.example.idcma_project_prm392.database.entity.UserEntity;
  * Room Database class - Singleton pattern
  */
 @Database(
-    entities = {CertificateEntity.class, UserEntity.class, ProfileEntity.class, ShareRecordEntity.class},
+    entities = {CertificateEntity.class, UserEntity.class, ProfileEntity.class, SettingsEntity.class, ShareRecordEntity.class},
     version = 2,
     exportSchema = false
 )

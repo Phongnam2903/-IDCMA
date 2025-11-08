@@ -44,5 +44,8 @@ public interface UserDao {
 
     @Query("DELETE FROM users WHERE email = :email")
     void deleteUserByEmail(String email);
+
+    @Query("UPDATE users SET two_factor_enabled = :enabled WHERE id = :userId")
+    void updateTwoFactor(long userId, boolean enabled);
 }
 

@@ -1,5 +1,6 @@
 package com.example.idcma_project_prm392.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -29,6 +30,9 @@ public class UserEntity {
     @ColumnInfo(name = "profile_image_path")
     private String profileImagePath; // Local file path
 
+    @ColumnInfo(name = "two_factor_enabled")
+    private boolean twoFactorEnabled;
+
     public UserEntity() {}
 
     @Ignore
@@ -39,6 +43,9 @@ public class UserEntity {
         this.role = role;
         this.profileImagePath = profileImagePath;
     }
+
+    public boolean getTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
 
     // Getters and Setters
     public long getId() { return id; }
@@ -58,5 +65,13 @@ public class UserEntity {
 
     public String getProfileImagePath() { return profileImagePath; }
     public void setProfileImagePath(String profileImagePath) { this.profileImagePath = profileImagePath; }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", fullName='" + fullName + '\'';
+    }
 }
 
