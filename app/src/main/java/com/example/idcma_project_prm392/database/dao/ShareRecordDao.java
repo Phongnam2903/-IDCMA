@@ -6,7 +6,10 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+import androidx.room.Delete;
+
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
+
 import java.util.List;
 
 /**
@@ -15,6 +18,8 @@ import java.util.List;
 @Dao
 public interface ShareRecordDao {
 
+    @Insert
+    void insert(ShareRecordEntity shareRecord);
     @Query("SELECT * FROM share_records WHERE user_id = :userId ORDER BY share_date DESC")
     List<ShareRecordEntity> getShareRecordsByUserId(String userId);
 
@@ -37,15 +42,24 @@ public interface ShareRecordDao {
     long insertShareRecord(ShareRecordEntity shareRecord);
 
     @Update
+    void update(ShareRecordEntity shareRecord);
     void updateShareRecord(ShareRecordEntity shareRecord);
 
     @Delete
+    void delete(ShareRecordEntity shareRecord);
     void deleteShareRecord(ShareRecordEntity shareRecord);
 
+    @Query("SELECT * FROM share_record WHERE user_id = :userId")
+    List<ShareRecordEntity> getAllByUser(String userId);
     @Query("DELETE FROM share_records WHERE id = :id")
     void deleteShareRecordById(long id);
 
+    @Query("SELECT * FROM share_record WHERE id = :id LIMIT 1")
+    ShareRecordEntity getById(long id);
     @Query("UPDATE share_records SET is_expired = 1, status = 'Expired' WHERE expiration_date < :currentDate AND is_expired = 0")
     void markExpiredRecords(String currentDate);
 }
 
+    @Query("DELETE FROM share_record")
+    void clearAll();
+}

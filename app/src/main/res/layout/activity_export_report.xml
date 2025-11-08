@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5">
@@ -19,12 +18,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:titleTextColor="@android:color/white" />
 
-    <!-- Content -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/exportToolbar"
+        app:layout_constraintTop_toBottomOf="@+id/exportToolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -36,23 +33,42 @@
             android:padding="16dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Xuất báo cáo chứng chỉ"
-                android:textSize="18sp"
+                android:layout_marginTop="16dp"
+                android:text="Chọn định dạng xuất:"
                 android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:textSize="16sp" />
 
-            <TextView
+            <RadioGroup
+                android:id="@+id/rgFormat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Chức năng này đang được phát triển..."
-                android:textSize="14sp"
-                android:textColor="#666666" />
+                android:layout_marginTop="8dp">
+
+                <RadioButton
+                    android:id="@+id/rbPdf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="PDF" />
+
+                <RadioButton
+                    android:id="@+id/rbCsv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CSV" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btnGenerate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="?attr/colorPrimary"
+                android:text="Tạo báo cáo"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
-
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
-

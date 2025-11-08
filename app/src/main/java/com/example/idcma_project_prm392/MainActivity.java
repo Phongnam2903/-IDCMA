@@ -15,8 +15,10 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
-import com.example.idcma_project_prm392.view.auth.ProfileActivity;
+import com.example.idcma_project_prm392.view.profile.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
+import com.example.idcma_project_prm392.view.report.ExportReportActivity;
+import com.example.idcma_project_prm392.view.report.ShareRecordActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -113,6 +115,11 @@ public class MainActivity extends AppCompatActivity {
         } else if (itemId == R.id.action_search) {
             startActivity(new Intent(MainActivity.this, com.example.idcma_project_prm392.view.certificate.SearchFilterActivity.class));
             return true;
+        } else if (itemId == R.id.action_share_record){
+            startActivity(new Intent(MainActivity.this, ShareRecordActivity.class));
+            return true;
+        } else if (itemId == R.id.action_export_report){
+            startActivity(new Intent(MainActivity.this, ExportReportActivity.class));
         }
         
         return super.onOptionsItemSelected(item);
