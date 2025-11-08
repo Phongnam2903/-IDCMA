@@ -56,7 +56,7 @@ public class SearchFilterActivity extends AppCompatActivity {
     private Set<String> selectedCategories = new HashSet<>();
     private String sortBy = "name"; // name, date, expiring
     private boolean showExpiringSoonOnly = false;
-    private boolean showArchivedOnly = false;
+    private String archiveFilter = "active"; // "all", "active", "archived"
 
     // Debounce handler
     private Handler searchHandler = new Handler(Looper.getMainLooper());
@@ -199,8 +199,17 @@ public class SearchFilterActivity extends AppCompatActivity {
             }
 
             // Archived filter
-            if (showArchivedOnly) {
-                matchesArchived = cert.isArchived();
+            switch (archiveFilter) {
+                case "active":
+                    matchesArchived = !cert.isArchived(); // Chỉ hiển thị active
+                    break;
+                case "archived":
+                    matchesArchived = cert.isArchived(); // Chỉ hiển thị archived
+                    break;
+                case "all":
+                default:
+                    matchesArchived = true; // Hiển thị tất cả
+                    break;
             }
 
             // Add if all filters match
@@ -266,7 +275,7 @@ public class SearchFilterActivity extends AppCompatActivity {
             if (edtSearch.getText().toString().trim().isEmpty() && 
                 selectedCategories.isEmpty() && 
                 !showExpiringSoonOnly && 
-                !showArchivedOnly) {
+                archiveFilter.equals("active")) {
                 tvEmptyState.setText("Chưa có chứng chỉ nào");
             } else {
                 tvEmptyState.setText("Không tìm thấy kết quả\nphù hợp với bộ lọc");
@@ -285,12 +294,24 @@ public class SearchFilterActivity extends AppCompatActivity {
         // Get views from bottom sheet
         ChipGroup chipGroupCategories = sheetView.findViewById(R.id.chipGroupCategories);
         RadioGroup radioGroupSort = sheetView.findViewById(R.id.radioGroupSort);
+        RadioGroup radioGroupArchive = sheetView.findViewById(R.id.radioGroupArchive);
         Chip chipExpiringSoon = sheetView.findViewById(R.id.chipExpiringSoon);
-        Chip chipArchived = sheetView.findViewById(R.id.chipArchived);
 
         // Set current filter states
         chipExpiringSoon.setChecked(showExpiringSoonOnly);
-        chipArchived.setChecked(showArchivedOnly);
+        
+        // Set current archive filter
+        RadioButton radioArchiveActive = sheetView.findViewById(R.id.radioArchiveActive);
+        RadioButton radioArchiveArchived = sheetView.findViewById(R.id.radioArchiveArchived);
+        RadioButton radioArchiveAll = sheetView.findViewById(R.id.radioArchiveAll);
+        
+        if (archiveFilter.equals("active")) {
+            radioArchiveActive.setChecked(true);
+        } else if (archiveFilter.equals("archived")) {
+            radioArchiveArchived.setChecked(true);
+        } else {
+            radioArchiveAll.setChecked(true);
+        }
 
         // Set current sort
         if (sortBy.equals("name")) {
@@ -327,7 +348,16 @@ public class SearchFilterActivity extends AppCompatActivity {
 
             // Get quick filters
             showExpiringSoonOnly = chipExpiringSoon.isChecked();
-            showArchivedOnly = chipArchived.isChecked();
+            
+            // Get archive filter
+            int selectedArchiveId = radioGroupArchive.getCheckedRadioButtonId();
+            if (selectedArchiveId == R.id.radioArchiveActive) {
+                archiveFilter = "active";
+            } else if (selectedArchiveId == R.id.radioArchiveArchived) {
+                archiveFilter = "archived";
+            } else if (selectedArchiveId == R.id.radioArchiveAll) {
+                archiveFilter = "all";
+            }
 
             // Apply filters
             applyFiltersAndSort();
@@ -339,7 +369,7 @@ public class SearchFilterActivity extends AppCompatActivity {
             selectedCategories.clear();
             sortBy = "name";
             showExpiringSoonOnly = false;
-            showArchivedOnly = false;
+            archiveFilter = "active"; // Mặc định chỉ hiển thị active
             applyFiltersAndSort();
             bottomSheet.dismiss();
         });

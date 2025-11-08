@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:id="@+id/tv_showcase_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tạo Báo cáo Tổng hợp"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_margin="16dp" />
+
+    <TextView
+        android:id="@+id/tv_showcase_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chọn các chứng chỉ bạn muốn đưa vào báo cáo."
+        android:layout_below="@id/tv_showcase_title"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_selectable_certs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tv_showcase_desc"
+        android:layout_above="@id/bottom_layout"
+        android:layout_marginTop="16dp" />
+
+    <LinearLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#F5F5F5"
+        android:elevation="8dp">
+
+        <EditText
+            android:id="@+id/edit_text_report_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nhập tiêu đề báo cáo (ví dụ: Chứng chỉ Java)"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/button_generate_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tạo và Chia sẻ Báo cáo"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar_showcase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>

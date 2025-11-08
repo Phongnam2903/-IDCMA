@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="reminder_options">
+        <item>1 tuần trước</item>
+        <item>1 tháng trước</item>
+        <item>3 tháng trước</item>
+    </string-array>
+</resources>
