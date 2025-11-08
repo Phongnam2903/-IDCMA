@@ -1,12 +1,11 @@
 package com.example.idcma_project_prm392.view.auth;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,15 +14,17 @@ import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.repository.UserRepository;
 import com.example.idcma_project_prm392.utils.SessionManager;
 import com.example.idcma_project_prm392.view.certificate.DashboardActivity;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText etFullName, etEmail, etPassword, etConfirmPassword;
-    private Button btnRegister;
+    private TextInputEditText etFullName, etEmail, etPhone, etPassword, etConfirmPassword;
+    private MaterialButton btnRegister;
     private TextView tvLogin;
     private UserRepository userRepository;
     private SessionManager sessionManager;
-    private ProgressDialog progressDialog;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +38,12 @@ public class RegisterActivity extends AppCompatActivity {
         // Ánh xạ view
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
+        etPhone = findViewById(R.id.etPhone);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
-
-        // Progress dialog
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Đang tạo tài khoản...");
-        progressDialog.setCancelable(false);
+        progressBar = findViewById(R.id.progressBar);
 
         // Sự kiện nút đăng ký
         btnRegister.setOnClickListener(v -> registerUser());
@@ -59,10 +57,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void registerUser() {
-        String fullName = etFullName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
+        String fullName = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
+        String password = etPassword.getText() != null ? etPassword.getText().toString().trim() : "";
+        String confirmPassword = etConfirmPassword.getText() != null ? etConfirmPassword.getText().toString().trim() : "";
 
         // Kiểm tra dữ liệu đầu vào
         if (TextUtils.isEmpty(fullName) || TextUtils.isEmpty(email)
@@ -81,7 +79,8 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        progressDialog.show();
+        progressBar.setVisibility(View.VISIBLE);
+        btnRegister.setEnabled(false);
 
         // Kiểm tra email có tồn tại trước khi tạo tài khoản
         new Thread(() -> {
@@ -89,7 +88,8 @@ public class RegisterActivity extends AppCompatActivity {
             
             runOnUiThread(() -> {
                 if (emailExists) {
-                    progressDialog.dismiss();
+                    progressBar.setVisibility(View.GONE);
+                    btnRegister.setEnabled(true);
                     Toast.makeText(this, "Email này đã được đăng ký. Vui lòng dùng email khác.", Toast.LENGTH_LONG).show();
                 } else {
                     // Nếu email chưa tồn tại → tạo tài khoản mới
@@ -110,7 +110,8 @@ public class RegisterActivity extends AppCompatActivity {
             long userId = userRepository.register(user);
             
             runOnUiThread(() -> {
-                progressDialog.dismiss();
+                progressBar.setVisibility(View.GONE);
+                btnRegister.setEnabled(true);
                 
                 if (userId > 0) {
                     // Tạo session

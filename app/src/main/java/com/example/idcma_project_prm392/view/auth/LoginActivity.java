@@ -2,12 +2,11 @@ package com.example.idcma_project_prm392.view.auth;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,15 +15,17 @@ import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.repository.UserRepository;
 import com.example.idcma_project_prm392.utils.SessionManager;
 import com.example.idcma_project_prm392.view.certificate.DashboardActivity;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText loginEmail, loginPassword;
-    private Button btnLogin;
+    private TextInputEditText loginEmail, loginPassword;
+    private MaterialButton btnLogin;
     private TextView tvGoToRegister;
     private UserRepository userRepository;
     private SessionManager sessionManager;
-    private ProgressDialog progress;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         loginPassword = findViewById(R.id.loginPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvGoToRegister = findViewById(R.id.tvGoToRegister);
-
-        progress = new ProgressDialog(this);
-        progress.setCancelable(false);
-        progress.setMessage("Đang đăng nhập...");
+        progressBar = findViewById(R.id.progressBar);
 
         btnLogin.setOnClickListener(v -> loginUser());
         tvGoToRegister.setOnClickListener(v ->
@@ -58,22 +56,24 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser() {
-        String email = loginEmail.getText().toString().trim();
-        String password = loginPassword.getText().toString().trim();
+        String email = loginEmail.getText() != null ? loginEmail.getText().toString().trim() : "";
+        String password = loginPassword.getText() != null ? loginPassword.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        progress.show();
+        progressBar.setVisibility(View.VISIBLE);
+        btnLogin.setEnabled(false);
 
         // Login từ Room Database
         new Thread(() -> {
             User user = userRepository.login(email, password);
             
             runOnUiThread(() -> {
-                progress.dismiss();
+                progressBar.setVisibility(View.GONE);
+                btnLogin.setEnabled(true);
                 
                 if (user != null) {
                     // Tạo session
