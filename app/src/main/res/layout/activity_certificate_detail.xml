@@ -222,7 +222,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Tags Card -->
+            <!-- Tags Card (ChipGroup + Add Tag button) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -245,14 +245,43 @@
                         android:textColor="@android:color/black"
                         android:layout_marginBottom="8dp"/>
 
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupTags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="false"
+                        app:chipSpacingHorizontal="8dp"
+                        app:chipSpacingVertical="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddTag"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:text="Add Tag"
+                        android:layout_marginTop="8dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
                     <TextView
-                        android:id="@+id/tvTags"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="#IT  #Android  #Developer"
-                        android:textSize="14sp"
-                        android:textColor="@color/teal_700"
-                        android:visibility="gone"/>
+                        android:text="🔔 Đặt lịch nhắc nhở"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/black"
+                        android:layout_marginBottom="8dp"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_reminder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Bật nhắc nhở khi hết hạn"
+                        android:textSize="16sp"/>
+
+                    <Spinner
+                        android:id="@+id/spinner_reminder_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -359,6 +388,18 @@
             android:text="Sửa"
             android:textAllCaps="false"
             android:backgroundTint="#FF9800"
+            android:layout_marginEnd="4dp"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <!-- NEW: Archive button -->
+        <Button
+            android:id="@+id/btnArchive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Archive"
+            android:textAllCaps="false"
+            android:backgroundTint="#9E9E9E"
             android:layout_marginEnd="4dp"
             style="@style/Widget.MaterialComponents.Button"/>
 

@@ -50,7 +50,12 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8") // load ảnh chứng chỉ
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.cardview:cardview:1.0.0")
+
+    // Thư viện WorkManager
+    implementation("androidx.work:work-runtime:2.9.0")
     
     // Gson for TypeConverter (convert List<String> to JSON)
     implementation("com.google.code.gson:gson:2.10.1")
+
+    implementation("androidx.work:work-runtime:2.9.0")
 }
