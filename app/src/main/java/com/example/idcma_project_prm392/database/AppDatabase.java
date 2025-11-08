@@ -21,7 +21,7 @@ import com.example.idcma_project_prm392.database.entity.UserEntity;
  */
 @Database(
     entities = {CertificateEntity.class, UserEntity.class, ProfileEntity.class, SettingsEntity.class, ShareRecordEntity.class},
-    version = ,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters({

@@ -1,5 +1,6 @@
 package com.example.idcma_project_prm392.database.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -64,5 +65,13 @@ public class UserEntity {
 
     public String getProfileImagePath() { return profileImagePath; }
     public void setProfileImagePath(String profileImagePath) { this.profileImagePath = profileImagePath; }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", fullName='" + fullName + '\'';
+    }
 }
 

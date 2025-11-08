@@ -49,14 +49,13 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.btnLogout);
 
         sessionManager = new SessionManager(this);
-        userDAO = AppDatabase.getInstance(this).userDao(); // lấy DAO từ Room
+        userDAO = AppDatabase.getInstance(this).userDao();
+        //Toast.makeText(this, userDAO.getUserById(Long.parseLong(sessionManager.getUserId())).toString(), Toast.LENGTH_SHORT).show();
 
         loadUserInfo();
 
-        // --- Lưu thay đổi tên/email ---
         btnUpdate.setOnClickListener(v -> updateProfile());
 
-        // --- Logout ---
         btnLogout.setOnClickListener(v -> {
             sessionManager.logout();
             Toast.makeText(this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
@@ -64,7 +63,6 @@ public class ProfileActivity extends AppCompatActivity {
             finishAffinity();
         });
 
-        // --- Thay đổi 2FA ngay lập tức ---
         switch2FA.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (currentUser != null) {
                 currentUser.setTwoFactorEnabled(isChecked);
@@ -76,7 +74,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void loadUserInfo() {
         String userId = sessionManager.getUserId();
         if (userId == null) return;
-
         new Thread(() -> {
             try {
                 long id = Long.parseLong(userId);
