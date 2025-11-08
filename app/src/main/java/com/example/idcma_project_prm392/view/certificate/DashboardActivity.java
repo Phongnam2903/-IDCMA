@@ -25,7 +25,8 @@ import com.example.idcma_project_prm392.utils.SessionManager;
 import com.example.idcma_project_prm392.view.profile.ProfileActivity;
 import com.example.idcma_project_prm392.view.report.ExportReportActivity;
 import com.example.idcma_project_prm392.view.report.ShareRecordActivity;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,8 @@ public class DashboardActivity extends AppCompatActivity {
     private CertificateRepository certificateRepository;
     private SessionManager sessionManager;
     private ProgressBar progressBar;
-    private TextView tvEmptyState;
-    private FloatingActionButton fabAdd;
+    private LinearLayout tvEmptyState;
+    private ExtendedFloatingActionButton fabAdd;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

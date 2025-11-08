@@ -66,8 +66,8 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
                 holder.expiringSoonIndicator.setVisibility(View.GONE);
                 holder.tvExpiringBadge.setVisibility(View.GONE);
                 
-                // Reset to default color
-                holder.tvExpiryDate.setTextColor(0xFF777777); // Gray color
+                // Reset to default color (match layout)
+                holder.tvExpiryDate.setTextColor(0xFF888888); // Gray color
             }
         } else {
             holder.tvExpiryDate.setText("Hết hạn: Không có thông tin");
