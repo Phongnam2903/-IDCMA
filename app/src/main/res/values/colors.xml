@@ -3,4 +3,7 @@
     <color name="teal_700">#00796B</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Colors for menu text -->
+    <color name="menu_text_dark">#FF212121</color>
+    <color name="menu_text_primary">#FF6200EE</color>
 </resources>
