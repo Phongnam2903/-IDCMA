@@ -28,7 +28,7 @@
         </activity> <!-- Màn hình chính -->
         <activity android:name=".MainActivity" /> <!-- Màn hình đăng ký tài khoản -->
         <activity android:name=".view.auth.RegisterActivity" />
-        <activity android:name=".view.auth.ProfileActivity" /> <!-- Certificate Management Activities -->
+        <activity android:name=".view.profile.ProfileActivity" />
         <activity
             android:name=".view.certificate.DashboardActivity"
             android:label="Dashboard" />

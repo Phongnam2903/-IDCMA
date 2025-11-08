@@ -15,7 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.idcma_project_prm392.adapter.CertificateAdapter;
 import com.example.idcma_project_prm392.model.Certificate;
 import com.example.idcma_project_prm392.repository.CertificateRepository;
-import com.example.idcma_project_prm392.view.auth.ProfileActivity;
+import com.example.idcma_project_prm392.view.profile.ProfileActivity;
 import com.example.idcma_project_prm392.view.certificate.AddCertificateActivity;
 import com.example.idcma_project_prm392.view.report.ExportReportActivity;
 import com.example.idcma_project_prm392.view.report.ShareRecordActivity;
