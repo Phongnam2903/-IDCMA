@@ -13,7 +13,6 @@ import com.example.idcma_project_prm392.database.entity.CertificateEntity;
 import com.example.idcma_project_prm392.database.entity.ProfileEntity;
 import com.example.idcma_project_prm392.database.entity.SettingsEntity;
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
-import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
 import com.example.idcma_project_prm392.database.entity.UserEntity;
 
 /**
@@ -21,7 +20,7 @@ import com.example.idcma_project_prm392.database.entity.UserEntity;
  */
 @Database(
     entities = {CertificateEntity.class, UserEntity.class, ProfileEntity.class, SettingsEntity.class, ShareRecordEntity.class},
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters({
