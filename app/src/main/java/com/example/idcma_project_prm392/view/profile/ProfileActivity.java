@@ -16,7 +16,6 @@ import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.database.AppDatabase;
 import com.example.idcma_project_prm392.database.dao.UserDao;
 import com.example.idcma_project_prm392.database.entity.UserEntity;
-import com.example.idcma_project_prm392.model.User;
 import com.example.idcma_project_prm392.utils.SessionManager;
 import com.example.idcma_project_prm392.view.auth.LoginActivity;
 
@@ -35,13 +34,11 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // --- Toolbar ---
         Toolbar toolbar = findViewById(R.id.profileToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // --- UI binding ---
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
         switch2FA = findViewById(R.id.switch2FA);
@@ -50,7 +47,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         userDAO = AppDatabase.getInstance(this).userDao();
-        //Toast.makeText(this, userDAO.getUserById(Long.parseLong(sessionManager.getUserId())).toString(), Toast.LENGTH_SHORT).show();
 
         loadUserInfo();
 
@@ -74,6 +70,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void loadUserInfo() {
         String userId = sessionManager.getUserId();
         if (userId == null) return;
+
         new Thread(() -> {
             try {
                 long id = Long.parseLong(userId);
