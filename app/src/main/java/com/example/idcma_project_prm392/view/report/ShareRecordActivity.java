@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView; // Import RecyclerView
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.adapter.ShareRecordAdapter; // Import Adapter mới
 import com.example.idcma_project_prm392.database.AppDatabase;
-import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
+import com.example.idcma_project_prm392.dto.CertificateReportDTO;
 import com.example.idcma_project_prm392.utils.SessionManager;
 
 import java.util.ArrayList; // Thêm ArrayList
@@ -61,11 +61,10 @@ public class ShareRecordActivity extends AppCompatActivity {
         String userId = sessionManager.getUserId();
 
         new Thread(() -> {
-            List<ShareRecordEntity> records = db.shareRecordDao().getAllByUser(String.valueOf(userId));
+            List<CertificateReportDTO> records = db.shareRecordDao().getAllByUser(String.valueOf(userId));
 
             runOnUiThread(() -> {
                 if (records == null || records.isEmpty()) {
-                    // Hiển thị trạng thái trống
                     recyclerView.setVisibility(View.GONE);
                     tvEmptyState.setText("Chưa có lịch sử chia sẻ");
                     tvEmptyState.setVisibility(View.VISIBLE);

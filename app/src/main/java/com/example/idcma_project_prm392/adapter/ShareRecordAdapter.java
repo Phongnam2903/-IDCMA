@@ -14,16 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.idcma_project_prm392.R;
 import com.example.idcma_project_prm392.database.entity.ShareRecordEntity;
+import com.example.idcma_project_prm392.dto.CertificateReportDTO;
 
 import java.util.List;
 
 public class ShareRecordAdapter extends RecyclerView.Adapter<ShareRecordAdapter.ViewHolder> {
     // Nếu bạn bắt buộc phải dùng tên CertificateRecordAdapter, hãy đổi tên class này.
 
-    private List<ShareRecordEntity> recordList;
+    private List<CertificateReportDTO> recordList;
     private Context context;
 
-    public ShareRecordAdapter(List<ShareRecordEntity> recordList) {
+    public ShareRecordAdapter(List<CertificateReportDTO> recordList) {
         this.recordList = recordList;
     }
 
@@ -39,26 +40,23 @@ public class ShareRecordAdapter extends RecyclerView.Adapter<ShareRecordAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ShareRecordEntity record = recordList.get(position);
+        CertificateReportDTO record = recordList.get(position);
 
-        // 1. Email Người nhận
-        String recipient = record.getRecipientEmail();
+        String recipient = record.shareRecord.getRecipientEmail();
         holder.tvRecipientEmail.setText("Chia sẻ với: " +
                 (!TextUtils.isEmpty(recipient) ? recipient : "Người dùng ẩn danh"));
 
-        // 2. ID Chứng chỉ (Có thể ẩn nếu không cần)
-        holder.tvCertificateId.setText("ID Chứng chỉ: #" + record.getCertificateId());
+        holder.tvCertificateName.setText("Tên Chứng chỉ: #" + record.certificate.getName());
 
-        // 3. Ngày chia sẻ
-        String shareDate = record.getShareDate();
+        holder.tvIssuer.setText("Tổ chức cấp: " + record.certificate.getIssuer());
+
+        String shareDate = record.shareRecord.getShareDate();
         holder.tvShareDate.setText("Ngày chia sẻ: " +
                 (!TextUtils.isEmpty(shareDate) ? shareDate : "N/A"));
 
-        // 4. Trạng thái và màu sắc
-        String status = record.getStatus();
+        String status = record.shareRecord.getStatus();
         holder.tvStatus.setText("Trạng thái: " + (status != null ? status : "N/A"));
 
-        // Thiết lập màu sắc cho trạng thái
         int statusColor;
         if ("Active".equalsIgnoreCase(status)) {
             statusColor = ContextCompat.getColor(context, android.R.color.holo_green_dark);
@@ -69,12 +67,11 @@ public class ShareRecordAdapter extends RecyclerView.Adapter<ShareRecordAdapter.
         }
         holder.tvStatus.setTextColor(statusColor);
 
-        String link = record.getLink();
+        String link = record.shareRecord.getLink();
         if (!TextUtils.isEmpty(link)) {
             holder.tvLink.setText("Liên kết: [Nhấn để xem]");
             holder.tvLink.setVisibility(View.VISIBLE);
 
-            // Xử lý sự kiện click để mở link hoặc thông báo
             holder.tvLink.setOnClickListener(v -> {
                 // TODO: Triển khai logic mở link (ví dụ: dùng Intent) hoặc copy link
                 Toast.makeText(context, "Link chia sẻ: " + link, Toast.LENGTH_LONG).show();
@@ -85,7 +82,7 @@ public class ShareRecordAdapter extends RecyclerView.Adapter<ShareRecordAdapter.
 
         // Xử lý sự kiện click cho toàn bộ item
         holder.itemView.setOnClickListener(v -> {
-            Toast.makeText(context, "Đã chọn bản ghi ID: " + record.getId(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Đã chọn bản ghi ID: " + record.shareRecord.getId(), Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -94,19 +91,19 @@ public class ShareRecordAdapter extends RecyclerView.Adapter<ShareRecordAdapter.
         return recordList.size();
     }
 
-    public void updateList(List<ShareRecordEntity> newList) {
+    public void updateList(List<CertificateReportDTO> newList) {
         this.recordList = newList;
         notifyDataSetChanged();
     }
 
     // ViewHolder class
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvCertificateId, tvRecipientEmail, tvShareDate, tvStatus, tvLink;
+        TextView tvCertificateName, tvIssuer, tvRecipientEmail, tvShareDate, tvStatus, tvLink;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Ánh xạ các thành phần từ item_certificate_record.xml
-            tvCertificateId = itemView.findViewById(R.id.tvCertificateId);
+            tvIssuer = itemView.findViewById(R.id.tvIssuer);
+            tvCertificateName = itemView.findViewById(R.id.tvCertificateName);
             tvRecipientEmail = itemView.findViewById(R.id.tvRecipientEmail);
             tvShareDate = itemView.findViewById(R.id.tvShareDate);
             tvStatus = itemView.findViewById(R.id.tvStatus);
