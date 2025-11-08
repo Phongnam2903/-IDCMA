@@ -183,16 +183,16 @@ public class CertificateDetailActivity extends AppCompatActivity {
         tvIssuer.setText(certificate.getIssuer() != null ? certificate.getIssuer() : "N/A");
         tvCredentialId.setText(certificate.getCredentialId() != null ? certificate.getCredentialId() : "Không có");
         tvIssueDate.setText(certificate.getIssueDate() != null ? certificate.getIssueDate() : "N/A");
-
+        
         // Status + nút Archive
         if (certificate.isArchived()) {
             tvStatus.setText("📦 Đã lưu trữ");
-            tvStatus.setBackgroundColor(0xFF9E9E9E);
-            if (btnArchive != null) btnArchive.setText("Unarchive");
+            tvStatus.setBackgroundResource(R.drawable.bg_status_archived);
+            if (btnArchive != null) btnArchive.setText("Bỏ lưu trữ");
         } else {
             tvStatus.setText("✅ Đang hoạt động");
-            tvStatus.setBackgroundColor(0xFF4CAF50);
-            if (btnArchive != null) btnArchive.setText("Archive");
+            tvStatus.setBackgroundResource(R.drawable.bg_status_active);
+            if (btnArchive != null) btnArchive.setText("Lưu trữ");
         }
 
         // Expiry
@@ -218,7 +218,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         String filePath = certificate.getFileUrl();
         if (filePath != null && !filePath.isEmpty() && LocalStorageHelper.fileExists(filePath)) {
             cardFile.setVisibility(View.VISIBLE);
-
+            
             String lower = filePath.toLowerCase();
             if (lower.endsWith(".pdf")) {
                 tvFileType.setText("📄 PDF Document");
@@ -478,7 +478,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         if (certificate == null) return;
 
         final boolean target = !certificate.isArchived();
-        String title = target ? "Lưu trữ chứng chỉ" : "Khôi phục chứng chỉ";
+        String title = target ? "Lưu trữ chứng chỉ" : "Bỏ lưu trữ chứng chỉ";
         String msg   = target ? "Chuyển chứng chỉ vào mục lưu trữ?" : "Khôi phục chứng chỉ vào danh sách chính?";
 
         new AlertDialog.Builder(this)
@@ -672,9 +672,9 @@ public class CertificateDetailActivity extends AppCompatActivity {
         shareText.append("\n🔗 Link bảo mật:\n").append(secureLink);
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
-        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ chứng chỉ: " + certificate.getName());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText.toString());
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ qua"));
     }
 
@@ -699,13 +699,13 @@ public class CertificateDetailActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 long id = Long.parseLong(certificateId);
-
+                
                 if (certificate != null && certificate.getFileUrl() != null && !certificate.getFileUrl().isEmpty()) {
                     try { LocalStorageHelper.deleteCertificateFile(this, certificate.getFileUrl()); } catch (Exception ignore) {}
                 }
-
+                
                 certificateRepository.deleteCertificateById(id);
-
+                
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "✅ Đã xóa chứng chỉ thành công", Toast.LENGTH_SHORT).show();
@@ -732,13 +732,13 @@ public class CertificateDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "File không tồn tại", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        
         Uri fileUri = LocalStorageHelper.getUriFromPath(this, filePath);
         if (fileUri == null) {
             Toast.makeText(this, "Không thể mở file", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        
         String lower = filePath.toLowerCase();
         String mime = getContentResolver().getType(fileUri);
         if (mime == null) {
@@ -749,7 +749,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(fileUri, mime);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
+        
         try {
             startActivity(intent);
         } catch (Exception e) {
