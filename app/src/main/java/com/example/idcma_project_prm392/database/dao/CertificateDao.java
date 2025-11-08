@@ -53,8 +53,5 @@ public interface CertificateDao {
 
     @Query("DELETE FROM certificates WHERE user_id = :userId")
     void deleteCertificatesByUserId(String userId);
-
-    @Query("SELECT * FROM certificates WHERE user_id = :userId AND (is_archived = 0 OR :includeArchived = 1) AND (:includeExpired = 1 OR (expiry_date IS NULL OR expiry_date > :today))")
-    List<CertificateEntity> getFiltered(String userId, int includeArchived, int includeExpired, String today);
 }
 

@@ -14,42 +14,32 @@
         android:padding="12dp"
         android:orientation="vertical">
 
-
-
         <TextView
-            android:id="@+id/tvCertificateName"
+            android:id="@+id/tvCertificateId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tên Chứng chỉ: abc"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:ellipsize="end"/>
+            android:text="ID Chứng chỉ: #12345"
+            android:textSize="14sp"
+            android:textColor="#999999"
+            android:visibility="gone"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/tvRecipientEmail"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Chia sẻ với: abc@example.com"
-            android:textSize="14sp"
+            android:text="Chia sẻ với: recipient@example.com"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#555555"
-            android:ellipsize="end"/>
-
-        <TextView
-            android:id="@+id/tvIssuer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tổ chức cấp: abc"
-            android:textSize="14sp"
-            android:textColor="#555555"
-            android:layout_marginTop="4dp" />
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:maxLines="1"/>
 
         <TextView
             android:id="@+id/tvShareDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ngày chia sẻ: 30/10/2010 10:20"
+            android:text="Ngày chia sẻ: 10/10/2025 10:30"
             android:textSize="14sp"
             android:textColor="#555555"
             android:layout_marginTop="4dp" />
@@ -65,7 +55,7 @@
 
         <TextView
             android:id="@+id/tvLink"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Liên kết: Xem"
             android:textSize="14sp"
