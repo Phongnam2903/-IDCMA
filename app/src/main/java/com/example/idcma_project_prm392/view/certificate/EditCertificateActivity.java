@@ -5,10 +5,12 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.webkit.MimeTypeMap;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.webkit.MimeTypeMap;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -31,6 +33,8 @@ public class EditCertificateActivity extends AppCompatActivity {
 
     private TextInputEditText edtName, edtIssuer, edtIssueDate, edtExpiryDate, edtCredentialId;
     private Button btnUploadFile, btnSave;
+    private ImageView imgFilePreview;
+    private TextView tvFileName;
 
     private String certificateId;
     private CertificateRepository certificateRepository;
@@ -42,11 +46,21 @@ public class EditCertificateActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String[]> pickDocLauncher =
             registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
                 if (uri != null) {
-                    // Gợi ý: copy file được chọn về bộ nhớ app để thống nhất với fileUrl (đang là local path)
                     String copied = copyPickedToAppStorage(uri);
                     if (copied != null) {
                         newFileAbsolutePath = copied;
-                        Toast.makeText(this, "Đã chọn file: " + new File(copied).getName(), Toast.LENGTH_SHORT).show();
+                        File file = new File(copied);
+                        tvFileName.setText(file.getName());
+
+                        // Nếu là ảnh → hiển thị preview
+                        if (copied.endsWith(".jpg") || copied.endsWith(".jpeg") || copied.endsWith(".png")) {
+                            imgFilePreview.setImageURI(Uri.fromFile(file));
+                            imgFilePreview.setVisibility(ImageView.VISIBLE);
+                        } else {
+                            imgFilePreview.setVisibility(ImageView.GONE);
+                        }
+
+                        Toast.makeText(this, "Đã chọn file: " + file.getName(), Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(this, "Không thể nhập file", Toast.LENGTH_LONG).show();
                     }
@@ -91,7 +105,9 @@ public class EditCertificateActivity extends AppCompatActivity {
         edtCredentialId = findViewById(R.id.edtCredentialId);
         btnUploadFile = findViewById(R.id.btnUploadFile);
         btnSave = findViewById(R.id.btnSave);
-        btnSave.setText("Update");
+        imgFilePreview = findViewById(R.id.imgFilePreview);
+        tvFileName = findViewById(R.id.tvFileName);
+        btnSave.setText("Cập nhật chứng chỉ");
     }
 
     private void loadData() {
@@ -120,8 +136,24 @@ public class EditCertificateActivity extends AppCompatActivity {
         edtName.setText(s(certificate.getName()));
         edtIssuer.setText(s(certificate.getIssuer()));
         edtCredentialId.setText(s(certificate.getCredentialId()));
-        edtIssueDate.setText(s(certificate.getIssueDate()));   // format dd/MM/yyyy
+        edtIssueDate.setText(s(certificate.getIssueDate()));
         edtExpiryDate.setText(s(certificate.getExpiryDate()));
+
+        String filePath = certificate.getFileUrl();
+        if (filePath != null && !filePath.isEmpty()) {
+            File file = new File(filePath);
+            tvFileName.setText(file.getName());
+
+            if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg") || filePath.endsWith(".png")) {
+                imgFilePreview.setImageURI(Uri.fromFile(file));
+                imgFilePreview.setVisibility(ImageView.VISIBLE);
+            } else {
+                imgFilePreview.setVisibility(ImageView.GONE);
+            }
+        } else {
+            tvFileName.setText("Chưa chọn file");
+            imgFilePreview.setVisibility(ImageView.GONE);
+        }
     }
 
     private void showDatePicker(TextInputEditText target) {
@@ -145,16 +177,14 @@ public class EditCertificateActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
-                // cập nhật field
                 certificate.setName(name);
                 certificate.setIssuer(issuer);
                 certificate.setCredentialId(cred);
                 certificate.setIssueDate(issue);
                 certificate.setExpiryDate(expiry);
 
-                // nếu user chọn file mới → cập nhật đường dẫn
+                // Nếu user chọn file mới → cập nhật đường dẫn
                 if (newFileAbsolutePath != null) {
-                    // (tuỳ chọn) dọn file cũ
                     try {
                         String old = certificate.getFileUrl();
                         if (old != null && !old.isEmpty()) {
@@ -167,7 +197,7 @@ public class EditCertificateActivity extends AppCompatActivity {
                 certificateRepository.updateCertificate(certificate);
 
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Đã cập nhật", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đã cập nhật chứng chỉ", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                 });
@@ -177,7 +207,7 @@ public class EditCertificateActivity extends AppCompatActivity {
         }).start();
     }
 
-    // copy file từ SAF (content://) về thư mục files của app và trả về absolute path (String)
+    // copy file từ SAF (content://) về thư mục files của app và trả về absolute path
     private String copyPickedToAppStorage(Uri uri) {
         try {
             ContentResolver cr = getContentResolver();
